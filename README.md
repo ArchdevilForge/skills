@@ -1,7 +1,5 @@
 # ArchdevilForge Skills
 
-18 agent skills. Sanitized, KISS-structured.
-
 ## Install
 
 ```bash
@@ -28,8 +26,3 @@ npx skills add ArchdevilForge/skills@<skill>
 | `content` | copywriting + de-AI |
 | `thinking` | 8 frameworks |
 | `uv` | Python uv |
-
-## Notes
-
-- No keys, no paths, no private data
-- Skeleton SKILL.md + on-demand `references/`
