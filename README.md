@@ -3,7 +3,7 @@
 ## Install
 
 ```bash
-npx skills add ArchdevilForge/skills@<skill>
+npx skills add ArchdevilForge/skills
 ```
 
 ## Skills
