@@ -16,77 +16,41 @@ disable-model-invocation: true
 
 ## When NOT to Use
 
-- The match is already known or obvious ("where's the bottleneck?" → theory-of-constraints) — invoke that skill directly; do not route for show.
+- The match is already known or obvious — invoke that skill directly; do not route for show.
 - The task is routine implementation with no analytical unknown — reason directly (NONE).
 - You are mid-execution of an agreed plan and only need the next concrete step.
-- The ask is outside this catalog (pure coding syntax, tool ops with no judgment call) — NONE.
 
-## Invoking a Model (Skill IDs)
+## 框架速查（7 个，全部有完整版在 references/）
 
-The router outputs bare slugs (e.g. `id: five-whys-plus`). Invoke a routed skill with the Skill tool using the exact ID `thinking-skills:thinking-<slug>` — never invent a slug not cited in Procedure. `NONE` means no invocation.
+| 场景信号 | 用这个 | 一句话机制 |
+|----------|--------|-----------|
+| 约束被当固定、要重新发明 | first-principles | 拆掉惯例，只留物理约束，重建最小解 |
+| 计划/发布前找失败点 | pre-mortem | 假设已失败，反推原因 → 转成缓解与停止检查 |
+| 预测、估算、风险大小 | probabilistic | 基率锚定，给区间，按证据更新 |
+| 决策犹豫、两难 | reversibility | 先分可逆性：双向门快走，单向门留选项 |
+| 变更有连锁影响 | second-order | 追后果链：激励、规模、反馈，带时间与概率 |
+| 需求模糊、假设多、太「显然」 | socratic | 问承重问题，暴露隐藏需求再动手 |
+| 跨组件涌现行为、修东坏西 | systems | 画边界/存量流量/反馈，找杠杆点 |
 
 ## Procedure
 
-1. **Short-circuit.** If one skill clearly fits by mechanism, return that skill alone. If no skill clearly improves the work, return **NONE** and reason directly. Stop.
-2. **Characterize.** Record domain (coding, architecture, product, strategy, personal, abstract, risk, innovation) and problem type (diagnose, decide, understand, create, evaluate, predict, optimize). Note constraints: time, information, stakes, reversibility, complexity.
-3. **Candidate by type defaults (override when constraints demand).** Keep only active catalog skills:
-   - Diagnose → five-whys-plus or scientific-method (kepner-tregoe if IS/IS-NOT matrix needed)
-   - Decide → reversibility first; then opportunity-cost or probabilistic
-   - Understand → systems (map-territory if model-vs-reality gap; cynefin if approach domain unclear)
-   - Create → first-principles (triz for contradictions; effectuation for means-driven; via-negativa for remove-first)
-   - Evaluate → steel-manning (socratic if assumptions/definitions are the unknown)
-   - Predict → probabilistic
-   - Optimize → theory-of-constraints (ooda under time pressure; bounded-rationality for search stop)
-   - Risk / "what fails?" → pre-mortem or red-team; margin-of-safety for buffers
-   - Product "what to build?" → jobs-to-be-done
-   - Competence / durability → circle-of-competence, lindy-effect
-   - Controlled hypothetical → thought-experiment
-   - Multi-lens only after one primary fails a blind-spot check → model-combination
-4. **Select with criteria (satisficing).** Score only if 2+ candidates remain or stakes make a forced default unsafe. Rate each criterion 1–5 (1 = absent/wrong fit; 3 = usable with gaps; 5 = direct fit): problem fit (30%), available inputs (20%), time to apply (15%), stakeholder usability (15%), competence to apply correctly (20%). A route must score problem fit ≥4 and weighted total ≥3.5; otherwise return **NONE**. For totals within 0.25, prefer fewer inputs and shorter execution; if still tied, choose NONE unless the skills answer distinct complementary questions.
-5. **Multi-skill only as exception.** Add a second or third skill only when each has a distinct complementary role the primary leaves open. Cap at three. Prefer sequential over parallel. Near-neighbors and synonyms do not stack. For composition patterns, hand off to model-combination after naming the primary.
-6. **Exit.** State abandon signals (forced fit, ignored factors, no insight ~15 minutes). On mismatch, re-route once or fall back to NONE — never force a frame.
-
-**Domain cheat-map (primary first; still default to one or NONE):**
-
-| Domain signal | Prefer |
-|---------------|--------|
-| Bug / root cause / flaky | five-whys-plus, scientific-method, systems |
-| Architecture / tech choice | reversibility, systems, lindy-effect, opportunity-cost |
-| Feature / roadmap / engagement | jobs-to-be-done, opportunity-cost, theory-of-constraints |
-| Strategy / competition / growth | cynefin, systems, red-team, second-order |
-| Personal / career commitment | opportunity-cost, reversibility, circle-of-competence, pre-mortem |
-| Argument / belief update | steel-manning, probabilistic, socratic, first-principles |
-| Security / disaster / ruin | pre-mortem, red-team, margin-of-safety, via-negativa |
-| Innovation / contradiction / simplify | first-principles, triz, effectuation, via-negativa |
+1. **Short-circuit.** One skill clearly fits by mechanism → return it alone. No skill clearly improves the work → **NONE**, reason directly. Stop.
+2. **Match.** Otherwise scan the cheat-map above; pick the row whose signal matches the problem type (diagnose / decide / understand / create / evaluate / predict / optimize).
+3. **Sanity-check.** If the match is forced or the fit is only nominal, return **NONE**. Do not force a frame; re-route at most once.
+4. **Multi-skill only as exception.** Add a second skill only when it answers a distinct question the primary leaves open. Cap at two. Near-neighbors and synonyms do not stack.
 
 ## Output
 
 ```text
 outcome: NONE | one | multi
-routes:
-  - id: <primary skill id or NONE>
-    role: <job this skill performs>
-    unique_question: <question only this route answers>
-  - id: <secondary skill id, only for multi>
-    role: <distinct complementary job>
-    unique_question: <distinct open question>
-  - id: <tertiary skill id, only for multi>
-    role: <distinct complementary job>
-    unique_question: <distinct open question>
-domain: <domain>
-problem_type: <type>
-constraints: <time/info/stakes/reversibility>
-rationale: <mechanism fit in one sentence>
-blind_spots: <what primary still ignores, if any>
-exit: <when to abandon or re-route>
+route: <skill slug or NONE>
+why: <mechanism fit in one sentence>
 ```
-
-Default fill: `outcome: NONE` with one `id: NONE` route, or `outcome: one` with one route. Use `multi` only when every listed skill has a distinct role and unique question.
 
 ## Verification
 
-- **Falsify / stop:** If the route is habit or familiarity rather than mechanism fit, discard and re-score or return NONE. If multi-skill entries lack distinct roles, collapse to the single best primary. If no candidate clearly helps, NONE is correct — do not invent a route.
-- **Over-application guard:** Do not route when the skill is already obvious. Do not return more than three skills. Do not cite deleted or non-catalog names. Do not treat the router as a prerequisite for leaf skills invoked directly.
+- **Falsify / stop:** If the route is habit or familiarity rather than mechanism fit, discard and return NONE. If multi-skill entries lack distinct roles, collapse to the single best primary.
+- **Over-application guard:** Do not route when the skill is already obvious. Do not return more than two skills. Do not cite frameworks not listed above. Do not treat the router as a prerequisite for the 7 leaf skills invoked directly.
 
-## References（各框架完整版，按需读取）
+## References（框架完整版，按需读取）
 - first-principles.md / systems.md / pre-mortem.md / probabilistic.md / reversibility.md / second-order.md / socratic.md（references/ 目录）

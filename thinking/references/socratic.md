@@ -20,9 +20,9 @@ disable-model-invocation: true
 - Spec is already clear and actionable — do the work; do not interrogate for theater.
 - Ambiguity is resolvable by reading code, running a command, or checking docs — resolve it yourself.
 - Mid-execution of an agreed plan — re-questioning every step is friction, not rigor.
-- Emergency where one load-bearing fact is enough to act — clarify that fact, then act (prefer ooda).
-- You need the strongest opposing case, not clarification — use steel-manning.
-- You need causal chain depth on a defined failure — use five-whys-plus or scientific-method.
+- Emergency where one load-bearing fact is enough to act — clarify that fact, then act.
+- You need the strongest opposing case, not clarification — reason from the opposing position directly.
+- You need causal chain depth on a defined failure — trace the causal chain yourself.
 
 ## Procedure
 

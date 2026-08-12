@@ -18,9 +18,9 @@ Treat the problem as structure and interaction, not isolated parts. Map boundary
 ## When NOT to Use
 
 - Single-component linear bug with clear stack/diff—trace and fix.
-- Throughput limited by one obvious stage—use theory-of-constraints.
+- Throughput limited by one obvious stage — find and lift the bottleneck directly.
 - Decision is a consequence chain of one proposed action—use second-order.
-- Approach selection (plan vs probe vs stabilize)—use cynefin first.
+- Approach selection (plan vs probe vs stabilize)—judge by uncertainty: probe when unknown, plan when stable.
 
 ## Procedure
 
@@ -64,6 +64,6 @@ watch: <signals that confirm or falsify>
 
 ## Verification
 
-- **Falsify:** If removing one component fully explains and fixes the issue with no cross-effects, systems mapping is wrong—drop to local debug. If utilization shows one fixed stage as the sole cap, switch to theory-of-constraints.
+- **Falsify:** If removing one component fully explains and fixes the issue with no cross-effects, systems mapping is wrong—drop to local debug.
 - **Stop:** Do not keep adding loops after the chosen intervention and watch are set.
 - **Over-application guard:** No archetype without recurrence evidence. No low-leverage param tweak listed as primary when a feasible higher class exists. Do not recreate standalone archetype/feedback/leverage procedures—those checks live only inside this map.
