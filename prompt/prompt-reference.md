@@ -170,7 +170,7 @@ Prompt 3（验证）：跑 pytest，失败则回到 Prompt 2
 
 ### 7. 把验证写进 prompt
 
-没有 `<verify>` 的 prompt，在 loop 里等于没有终点：
+没有 `<verify>` 的 prompt 没有终点：
 
 ```xml
 <verify>
@@ -226,13 +226,12 @@ Prompt 3（验证）：跑 pytest，失败则回到 Prompt 2
 ### 给另一个 Agent 的指令（meta-prompt）
 
 ```xml
-<task>把以下用户需求改写为可执行的 goal prompt</task>
+<task>把以下用户需求改写为可执行的指令</task>
 <rules>
 改写后的 prompt 必须包含：
 1. 确切的最终状态（可观察）
 2. 验证命令
 3. 不能动的边界
-4. 停止条件与迭代上限
 </rules>
 <input>用户的原始需求</input>
 ```
@@ -240,7 +239,7 @@ Prompt 3（验证）：跑 pytest，失败则回到 Prompt 2
 ### 写 Skill（SKILL.md）
 
 ```xml
-<task>为「部署到 staging」写 Cursor skill</task>
+<task>为「部署到 staging」写一份操作 SOP</task>
 <rules>
 - frontmatter 含 name + description（第三人称 + 触发词）
 - 正文 < 500 行，细节外置 reference.md
@@ -256,20 +255,6 @@ description: ...
 ## Workflow
 ...
 </output_format>
-```
-
-### 嵌入 Loop 的 Prompt
-
-Loop 里的 prompt 额外要求：
-
-```xml
-<task>描述结果状态，不是操作步骤清单</task>
-<verify>独立验证命令（shell 退出码），禁止自我宣布完成</verify>
-<rules>
-- 每轮最多一个 bounded checkpoint
-- 同 root cause 连续失败 2 次 → 报告 BLOCKED，停止重试
-- 状态写入 AGENTS.md 或 .goal/
-</rules>
 ```
 
 ---
@@ -296,12 +281,6 @@ Loop 里的 prompt 额外要求：
 
 - [ ] 有 `<examples>`（≥2 个，含边界情况）
 - [ ] JSON 输出附字段说明和必填项
-
-### Loop 就绪（要进循环时）
-
-- [ ] 验证命令与执行者分离（不能「我觉得通过了」）
-- [ ] 有迭代上限或 BLOCKED 条件
-- [ ] 有状态持久化说明
 
 ---
 
@@ -331,16 +310,3 @@ Loop 里的 prompt 额外要求：
 | **D** | 只有一句「帮我做 X」，等同没有 prompt |
 
 **目标：交付的 prompt 至少 B，最好 A。**
-
----
-
-## 与 Loop 的关系
-
-```
-好 prompt = 清晰任务 + 可验证终点
-好 loop  = 好 prompt × 独立验证器 × 上限 × 状态
-```
-
-Prompt 写不好，loop 只会更快地重复错误。设计 loop 前，先用本清单把 prompt 打到 A/B。
-
-Loop 设计详见 [loop-patterns.md](loop-patterns.md)。

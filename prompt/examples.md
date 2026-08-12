@@ -1,4 +1,4 @@
-# Prompt & Loop 示例
+# Prompt 示例
 
 完整 before/after，供改写时对照。
 
@@ -156,7 +156,7 @@ No behavior change; all existing tests pass.
 
 ---
 
-## 示例 4：用户需求 → Goal-meta prompt
+## 示例 4：用户需求 → 可执行指令
 
 ### 用户原话
 
@@ -164,7 +164,7 @@ No behavior change; all existing tests pass.
 把这个项目的测试都搞绿，别动数据库迁移文件
 ```
 
-### 改写后的 Goal Prompt
+### 改写后
 
 ```xml
 <task>
@@ -180,7 +180,6 @@ No behavior change; all existing tests pass.
 - MUST：每个 checkpoint 只做一个 bounded 修复
 - MUST NOT：修改 db/migrations/
 - MUST NOT：删除、skip、xfail 测试来「搞绿」
-- 同 root cause 连续失败 2 次 → GOAL_STATUS: BLOCKED
 </rules>
 
 <verify>
@@ -189,58 +188,9 @@ git diff --name-only 不包含 db/migrations/
 </verify>
 ```
 
-### 对应 Loop Spec
-
-```markdown
-## Loop Spec: 测试全绿
-
-**原语：** /goal + cursor-goal
-**验证：** `uv run pytest`（独立 shell，非自评）
-**上限：** 8 checkpoint
-**状态：** cursor-goal 默认状态目录
-**Hook（可选）：** stop → 检查 pytest 退出码
-```
-
 ---
 
-## 示例 5：监控任务 → /loop prompt
-
-### Before
-
-```
-每隔一段时间看看 CI 挂了没
-```
-
-### After
-
-```xml
-<role>CI 监控助手，只在状态变化时汇报</role>
-
-<task>
-检查 GitHub Actions 最近 run 状态。
-仅当：新增失败 / 失败恢复 / 超过 30 分钟仍 pending 时汇报。
-</task>
-
-<context>
-- 仓库：org/repo
-- 检查命令：gh run list --limit 5 --json status,conclusion,name,updatedAt
-</context>
-
-<rules>
-- MUST：对比上轮记录（写 AGENTS.md），无变化则一句话带过
-- MUST NOT：无变化时重复长篇报告
-</rules>
-
-<verify>
-已执行 gh run list 并更新 AGENTS.md 时间戳
-</verify>
-```
-
-**Loop 配置：** `/loop 5m` + 上述 prompt。详见 `loop/SKILL.md`。
-
----
-
-## 示例 6：反模式对照
+## 示例 5：反模式对照
 
 | Before ❌ | After ✅ |
 |-----------|----------|

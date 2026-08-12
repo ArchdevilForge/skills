@@ -1,6 +1,8 @@
 ---
-name: design-taste
-description: Anti-slop frontend skill for landing pages, portfolios, and redesigns. The agent reads the brief, infers the right design direction, and ships interfaces that do not look templated. Real design systems when applicable, audit-first on redesigns, strict pre-flight check.
+name: design
+description: >-
+  Anti-slop frontend design for landing pages, portfolios, redesigns: read the brief, infer design direction, ship non-templated interfaces.
+  Query the bundled design database (styles/colors/typography/charts) via uiux-db-scripts/search.py when design-system recommendations are needed.
 ---
 
 # tasteskill: Anti-Slop Frontend Skill
@@ -596,3 +598,16 @@ Open the page in both modes during development. Do not ship a page you've only s
 → 详见 [references/vocabulary.md](references/vocabulary.md)：参考词汇表 + Redesign 协议
 → 详见 [references/block-library.md](references/block-library.md)：Block Library（组件实现库）
 → 详见 [references/appendix.md](references/appendix.md)：设计系统安装命令参考
+
+---
+
+## 9. 设计参考数据库（uiux-db）
+
+需要具体设计系统推荐（风格/配色/字体/图表/技术栈实践）时，查询捆绑数据库，不要凭训练记忆猜。
+
+```bash
+python3 uiux-db-scripts/search.py "<product_type> <industry> <keywords>" --design-system [-p "Project Name"]
+```
+
+完整用法（--persist 持久化、--domain 域搜索、--stack 技术栈）→ **[references/uiux-db.md](references/uiux-db.md)**
+
