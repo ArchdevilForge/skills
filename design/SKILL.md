@@ -136,6 +136,12 @@ Unless the design read picks a real design system (Section 2.A), these are the d
 * **Fonts:** Always use `next/font` (Next.js) or self-host with `@font-face` + `font-display: swap`. Never link Google Fonts via `<link>` in production.
 
 ### 3.B State
+* **State classification discipline (2025 consensus):** before choosing a tool, ask which class the state belongs to.
+  - **Server state** (API data) -> data-cache library (TanStack Query / SWR). Never hand-roll `useState + useEffect` caching. No request waterfalls: parallelize independent fetches, pre-fetch hidden data.
+  - **URL state** (filters / pagination / search / sort) -> sync to route params (nuqs or router), never store it.
+  - **UI-local state** (selected tab, temp filter, modal open) -> component `useState`. Do not globalize.
+  - **Shared state** -> prop drilling first, context when drilling hurts. Global store is the exception, not the default.
+* **NO Provider Pyramid:** when a context value changes, every consumer re-renders. More than two or three shared domains -> split domain contexts or use Zustand (fine-grained subscription).
 * Local `useState` / `useReducer` for isolated UI.
 * Global state ONLY for deep prop-drilling avoidance - Zustand, Jotai, or React context.
 * **NEVER** use `useState` to track continuous values driven by user input (mouse position, scroll progress, pointer physics, magnetic hover). Use Motion's `useMotionValue` / `useTransform` / `useScroll`. `useState` re-renders the React tree on every change and collapses on mobile.
