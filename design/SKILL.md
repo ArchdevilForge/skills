@@ -2,12 +2,13 @@
 name: design
 description: >-
   Anti-slop frontend design for landing pages, portfolios, redesigns: read the brief, infer design direction, ship non-templated interfaces.
+  For product UI (dashboards, admin panels, data tables) enforce the UI Contract in references/ui-contract.md instead.
   Query the bundled design database (styles/colors/typography/charts) via uiux-db-scripts/search.py when design-system recommendations are needed.
 ---
 
 # tasteskill: Anti-Slop Frontend Skill
 
-> Landing pages, portfolios, and redesigns. Not dashboards, not data tables, not multi-step product UI.
+> 双场景分流：营销页/作品集/Redesign 走本文件 anti-slop 规则；产品 UI（dashboard、管理后台、数据表格）走 [references/ui-contract.md](references/ui-contract.md) 一致性契约，两套规则不混用。
 > Every rule below is **contextual**. None of it fires automatically. First read the brief, then pull only what fits.
 
 ---
@@ -598,6 +599,7 @@ Open the page in both modes during development. Do not ship a page you've only s
 → 详见 [references/vocabulary.md](references/vocabulary.md)：参考词汇表 + Redesign 协议
 → 详见 [references/block-library.md](references/block-library.md)：Block Library（组件实现库）
 → 详见 [references/appendix.md](references/appendix.md)：设计系统安装命令参考
+→ 详见 [references/ui-contract.md](references/ui-contract.md)：产品 UI 一致性契约（dashboard/表格/管理后台）
 
 ---
 
