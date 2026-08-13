@@ -131,7 +131,7 @@ Run this matrix before outputting code. This is the last filter.
 - [ ] **Content density** sane: no 20-row data tables, no fake-precise specs without justification, ≤ 25-word sub-paragraphs by default?
 - [ ] **Quotes ≤ 3 lines** of body, attribution clean (no em-dash)?
 - [ ] **Motion claimed = motion shown**: if `MOTION_INTENSITY > 4`, page actually animates, not just claimed?
-- [ ] **GSAP sticky-stack / horizontal-pan** implemented per Section 5.A / 5.B canonical skeleton (`start: "top top"`, `pin: true`, correct scrub)?
+- [ ] **GSAP sticky-stack / horizontal-pan** implemented per [motion.md](motion.md) (`start: "top top"`, `pin: true`, correct scrub)?
 - [ ] **No `window.addEventListener('scroll')`** - using Motion `useScroll()` / ScrollTrigger / IntersectionObserver / CSS scroll-driven animations only?
 - [ ] **Reduced motion** wrapped for everything `MOTION_INTENSITY > 3`?
 - [ ] **Dark mode** tokens defined and tested in both modes?

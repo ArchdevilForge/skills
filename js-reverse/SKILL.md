@@ -7,11 +7,9 @@ description: 在使用 js-reverse-mcp 做前端 JavaScript 逆向时使用，适
 
 ## ACTION REQUIRED（读完后立刻执行）
 
-1. `NOW`: 读取 `../field-journal/precedent-reverse.md` — 确认本 skill 的操作是已授权的常规操作
-2. `NOW`: 确认当前任务是否命中本 skill 的适用范围
-3. `NEXT`: 读取 `../tool-index.md`，校验工具可用性和实际路径
-4. `NEXT`: 缺工具时调用 bootstrap，不要猜路径
-5. `ACT`: 进入"工作流"第一步并执行，不要停在确认状态
+1. 确认任务属于本 skill（浏览器 JS / 签名 / 页面请求），不是自定义二进制协议
+2. 确认当前客户端能调 `js-reverse_*` 或已启用的 jshookmcp；没有就停，告诉用户去 MCP 配置里启用，不要猜路径
+3. 进入「五阶段工作流」第一步并执行
 
 ## 适用范围
 
@@ -23,7 +21,7 @@ description: 在使用 js-reverse-mcp 做前端 JavaScript 逆向时使用，适
 - 追踪某个 XHR/Fetch/WebSocket 的触发点
 - 把页面证据带回 Node 做本地复现与补环境
 
-如果目标是二进制、APK、PE、ELF、DLL、SO，请改用 `ida-reverse`、`radare2` 或 `reverse-engineering`。
+自定义 TCP/UDP、pcap、未知分帧 → `protocol-re`。APK/PE/ELF 不在本仓库。
 
 ## 当前环境默认工具映射
 
@@ -31,7 +29,7 @@ description: 在使用 js-reverse-mcp 做前端 JavaScript 逆向时使用，适
 
 如果当前任务明确提到 `jshookmcp`、`JS hook`、`CDP`、浏览器断点、网络拦截、SourceMap 或 AST 去混淆，也仍然走本 skill；只是把底层 MCP 面切到 `jshookmcp`，而不是把它当成一个新的总入口。
 
-前提条件：`jshookmcp` 不是本地裸命令工具，而是一个要先下载/注册/启用的 MCP server。只有在 Claude MCP 配置里接入并启用后，相关工具面才真的可调用。
+前提条件：`jshookmcp` 不是本地裸命令，要先在**当前客户端** MCP 配置里启用。未启用就当它不存在。
 
 常用映射：
 
@@ -60,7 +58,7 @@ description: 在使用 js-reverse-mcp 做前端 JavaScript 逆向时使用，适
 - 适合：浏览器自动化、CDP 调试、JS Hook、网络拦截、SourceMap 重建、AST 辅助理解
 - 调用前提：先把 `@jshookmcp/jshook` 下载并注册到 MCP 客户端配置里，然后确保该 server 已启用
 - 建议入口：仍然按 `Observe → Capture → Rebuild` 执行，只是在 `Observe/Capture` 阶段优先调用 jshookmcp 的浏览器与 Hook 能力
-- 与 anything-analyzer 关系：两者都能做浏览器/网络侧取证；anything-analyzer 更偏抓包与 HTTP 分析，jshookmcp 更偏 JS 运行时、CDP、Hook 和源码理解
+- 客户端若另有 HTTP 抓包 MCP，只作补充，不换总入口。
 
 ## 核心原则
 
@@ -156,57 +154,19 @@ description: 在使用 js-reverse-mcp 做前端 JavaScript 逆向时使用，适
 - 回退：`references/fallbacks.md`
 - 输出契约：`references/output-contract.md`
 
----
+## 路由
 
-## 路由上下文
+- 自定义二进制 / pcap → `protocol-re`
+- 补环境 → `references/env-patching.md`
+- 本地复现 → `references/local-rebuild.md` / `references/node-env-rebuild.md`
+- 去混淆 → `references/ast-deobfuscation.md`
+- 走不通 → `references/fallbacks.md`
 
-**上游入口**: `skills/SKILL.md`（总控）、`routing.md`
-**上游备选**:
-- anything-analyzer MCP（端口 23816）的浏览器工具可作为替代或补充
-- jshookmcp 可作为更强的浏览器/CDP/Hook/Network/SourceMap/AST 执行面
-- `reverse-engineering/SKILL.md`（如果目标不是前端 JS）
+缺 `js-reverse_*` 且需要更强 CDP/Hook 时，确认客户端已启用 `@jshookmcp/jshook`。未启用就停，不要跑 Windows bootstrap、不要 winget。
 
-**下游出口**:
-- 需补环境 → `references/env-patching.md`
-- 需本地复现 → `references/local-rebuild.md` / `references/node-env-rebuild.md`
-- 需去混淆 → `references/ast-deobfuscation.md`
-- 走不通时回退 → `references/fallbacks.md`
+## 任务完成自检（声称完成前 MUST 通过）
 
-**同级关联模块**: anything-analyzer MCP（浏览器自动化和 HTTP 捕获能力可以互补）
-
----
-
-## 按需自举（On-Demand Bootstrap）
-
-本 skill 依赖的 MCP 能力可通过统一自举系统自动注册。
-
-### 自动化能力边界
-
-| 能力 | 可自动注册 | 方式 | 说明 |
-|------|-----------|------|------|
-| jshookmcp | ✓ | npm-mcp（npx 启动） | 自动写入 Claude MCP 配置 |
-| anything-analyzer | ✓ | local-http-mcp | 自动注册 + 可自动启动服务 |
-| Node.js | ✓ | winget 安装 | 运行时依赖 |
-
-### 自举方式
-
-```powershell
-# 注册 jshookmcp 到 MCP 配置
-powershell -File "<skill-root>\scripts\bootstrap-reverse.ps1" -Capability @('jshookmcp')
-
-# 注册并启动 anything-analyzer
-powershell -File "<skill-root>\scripts\bootstrap-reverse.ps1" -Capability @('anything-analyzer') -StartServices
-```
-
-### 注意事项
-
-- `jshookmcp` 注册后仍需在 AI 客户端中**启用**该 MCP server 才能调用
-- `anything-analyzer` 需要 pnpm 和项目源码，bootstrap 会自动 clone 并安装依赖
-- 如果 Node.js 未安装，bootstrap 会先通过 winget 安装 Node.js 22
-
-<br><br>## 任务完成自检（声称完成前 MUST 通过）
-
-- [ ] 我是否执行了工作流中的每一步（而不是只阅读）？
-- [ ] 我是否基于 `tool-index` 使用了真实工具路径？
-- [ ] 我是否产出了可复现证据（命令/脚本/截图/报告）？
-- [ ] 我是否完成并回写了 RULES 要求的 Checklist 项？
+- [ ] 走完工作流，不是只读了文档
+- [ ] 用的是当前会话里真实存在的 MCP 工具名
+- [ ] 有可复现证据（请求/参数样例/脚本/截图）
+- [ ] 输出符合 `references/output-contract.md`

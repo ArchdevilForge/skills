@@ -163,11 +163,6 @@ Tailwind 层面自定义语义化 utility（`page-padding`、`section-gap`、`ca
    components/patterns/ instead of implementing it locally.
 ```
 
-完成后加视觉 review —— 对产品 UI 它与 lint/typecheck/test 同等重要：
-
-```
-Implement → lint → typecheck → test → browser screenshot → visual review
-（与项目已有页面逐项对比：字号/圆角/padding/背景/宽度）→ finish
-```
+完成后加视觉 review —— 对产品 UI 它与 lint/typecheck/test 同等重要。怎么拍、怎么过 → [visual-qa.md](visual-qa.md)。
 
 实现中产生可复用 pattern → 沉淀回 `components/patterns/` + 更新 `ui-system.md`（实现中产生知识 → 沉淀回 Spec）。

@@ -5,17 +5,6 @@ description: generate, refine, validate, and render diagrams from natural langua
 
 # Diagram Generator
 
-## ACTION REQUIRED（读完后立刻执行）
-
-1. `NOW`：确认当前任务是否命中本 skill 的适用范围
-2. `NOW`：读取 `../tool-index.md`，校验工具可用性和实际路径
-3. `NEXT`：缺工具时调用 bootstrap，不要猜路径
-4. `ACT`：进入"工作流"第一步并执行，不要停在确认状态
-
-## Purpose
-
-Create clear, editable diagrams from messy or structured inputs. Prefer text-based diagram source first so the result can be reviewed, versioned, and refined. Render to files only when the user asks for an image/PDF or when a downloadable artifact would materially help.
-
 ## Default workflow
 
 1. Identify the user's intent, audience, and source material.
@@ -106,15 +95,13 @@ Use SVG only when text diagram languages cannot express the requested visual rel
 
 ## Rendering files
 
-When the user asks for PNG/SVG/PDF, create a source file and run:
+When the user asks for PNG/SVG/PDF, create a source file and run from this skill directory:
 
 ```bash
-python "<SKILL_ROOT>/diagram-generator/scripts/render_diagram.py" input.mmd --format svg --out output.svg
-python "<SKILL_ROOT>/diagram-generator/scripts/render_diagram.py" input.dot --format png --out output.png
-python "<SKILL_ROOT>/diagram-generator/scripts/render_diagram.py" input.puml --format svg --out output.svg
+python scripts/render_diagram.py input.mmd --format svg --out output.svg
+python scripts/render_diagram.py input.dot --format png --out output.png
+python scripts/render_diagram.py input.puml --format svg --out output.svg
 ```
-
-> `<SKILL_ROOT>` 是本包 `skills/` 目录的实际路径，AI 应自动检测。
 
 The renderer is intentionally dependency-tolerant. It tries common local tools and reports actionable installation hints if a renderer is unavailable. Do not claim an image was rendered unless the script completed successfully and the output file exists.
 
@@ -148,41 +135,10 @@ Rendered file: [link] [only if generated]
 
 For English user requests, respond in English. For Chinese user requests, respond in Chinese unless they ask otherwise.
 
----
+渲染器不可用时 `scripts/render_diagram.py` 会给出安装提示。未跑通脚本不要声称已生成图片。
 
-## 按需自举（On-Demand Bootstrap）
+## 任务完成自检
 
-### 自动化能力边界
-
-| 工具 | 可自动安装 | 安装方式 | 说明 |
-|------|-----------|---------|------|
-| Mermaid CLI (mmdc) | ✓ | npm install -g @mermaid-js/mermaid-cli | 渲染 Mermaid 为 PNG/SVG |
-| Graphviz (dot) | ✗ | 手动安装 | https://graphviz.org/download/ |
-| PlantUML | ✗ | 需要 Java + plantuml.jar | https://plantuml.com/download |
-| Python (render script) | ✓ | 已在 bootstrap 中 | `scripts/render_diagram.py` 依赖 |
-
-### 说明
-
-本 skill 主要输出文本格式的图表源码（Mermaid/DOT/PlantUML），不一定需要本地渲染工具。只有当用户明确要求生成 PNG/SVG/PDF 文件时才需要对应的渲染器。
-
-如果渲染器不可用，`scripts/render_diagram.py` 会输出安装提示而不是报错。
-
----
-
-## 路由上下文
-
-**上游入口**: `skills/SKILL.md`（总控）、`routing.md`
-**触发条件**: 用户说"画图"、"流程图"、"架构图"、"攻击路径图"、"时序图"、"Mermaid"、"Graphviz"、"PlantUML"
-**下游出口**:
-- 生成的图表可嵌入 `docs-generator/` 的报告中
-- 攻击路径图可配合 `pentest-tools/` 的渗透报告
-
-**同级关联模块**: `docs-generator/`（报告中嵌入图表）
-
-
-## 任务完成自检（声称完成前 MUST 通过）
-
-- [ ] 我是否执行了工作流中的每一步（而不是只阅读）？
-- [ ] 我是否基于 `tool-index` 使用了真实工具路径？
-- [ ] 我是否产出了可复现证据（命令/脚本/截图/报告）？
-- [ ] 我是否完成并回写了 RULES 要求的 Checklist 项？
+- [ ] 图类型匹配任务
+- [ ] 源码语法说得通
+- [ ] 若生成了文件：文件存在且非空

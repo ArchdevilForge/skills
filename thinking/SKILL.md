@@ -1,22 +1,22 @@
 ---
 name: thinking
-description: When unsure which thinking skill fits, map domain and problem type, then return NONE or one primary skill by default (at most three complementary).
+description: Map a problem to one of 7 thinking frameworks in references/, or NONE. User-invoked router — not a catalog of separate skills.
 disable-model-invocation: true
 ---
 
 # Model Router
 
-**Core rule:** Prefer NONE or one primary skill. Route by mechanism fit, not habit. Combine only when roles are distinct and necessary.
+**Core rule:** Prefer NONE or one primary framework. Route by mechanism fit, not habit. Combine only when roles are distinct and necessary.
 
 ## When to Use
 
-- The right thinking skill is unclear and you would otherwise guess or stack tools.
-- Several catalog skills seem plausible and you need a single primary (or explicit NONE).
+- The right framework is unclear and you would otherwise guess or stack tools.
+- Several rows in the cheat-map seem plausible and you need a single primary (or explicit NONE).
 - High-stakes work where a wrong frame is costly and a quick domain×type match helps.
 
 ## When NOT to Use
 
-- The match is already known or obvious — invoke that skill directly; do not route for show.
+- The match is already known or obvious — read that `references/*.md` directly; do not route for show.
 - The task is routine implementation with no analytical unknown — reason directly (NONE).
 - You are mid-execution of an agreed plan and only need the next concrete step.
 
@@ -34,23 +34,23 @@ disable-model-invocation: true
 
 ## Procedure
 
-1. **Short-circuit.** One skill clearly fits by mechanism → return it alone. No skill clearly improves the work → **NONE**, reason directly. Stop.
+1. **Short-circuit.** One framework clearly fits by mechanism → return it alone. None clearly improves the work → **NONE**, reason directly. Stop.
 2. **Match.** Otherwise scan the cheat-map above; pick the row whose signal matches the problem type (diagnose / decide / understand / create / evaluate / predict / optimize).
 3. **Sanity-check.** If the match is forced or the fit is only nominal, return **NONE**. Do not force a frame; re-route at most once.
-4. **Multi-skill only as exception.** Add a second skill only when it answers a distinct question the primary leaves open. Cap at two. Near-neighbors and synonyms do not stack.
+4. **Multi only as exception.** Add a second framework only when it answers a distinct question the primary leaves open. Cap at two. Near-neighbors and synonyms do not stack.
 
 ## Output
 
 ```text
 outcome: NONE | one | multi
-route: <skill slug or NONE>
+route: <framework slug or NONE>
 why: <mechanism fit in one sentence>
 ```
 
 ## Verification
 
-- **Falsify / stop:** If the route is habit or familiarity rather than mechanism fit, discard and return NONE. If multi-skill entries lack distinct roles, collapse to the single best primary.
-- **Over-application guard:** Do not route when the skill is already obvious. Do not return more than two skills. Do not cite frameworks not listed above. Do not treat the router as a prerequisite for the 7 leaf skills invoked directly.
+- **Falsify / stop:** If the route is habit or familiarity rather than mechanism fit, discard and return NONE. If multi entries lack distinct roles, collapse to the single best primary.
+- **Over-application guard:** Do not route when the framework is already obvious. Do not return more than two frameworks. Do not cite frameworks not listed above. Do not treat the router as a prerequisite for reading a leaf `references/*.md`.
 
 ## References（框架完整版，按需读取）
 - first-principles.md / systems.md / pre-mortem.md / probabilistic.md / reversibility.md / second-order.md / socratic.md（references/ 目录）

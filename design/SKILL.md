@@ -51,7 +51,7 @@ After the design read, set three dials. Every layout, motion, and density decisi
 * **`MOTION_INTENSITY: 6`** - 1 = Static, 10 = Cinematic / Physics
 * **`VISUAL_DENSITY: 4`** - 1 = Art Gallery / Airy, 10 = Cockpit / Packed Data
 
-**Baseline:** `8 / 6 / 4`. Use these unless the design read overrides them. Do not ask the user to edit this file - overrides happen conversationally.
+**Baseline:** `8 / 6 / 4`. Use these unless the design read overrides them. Do not ask the user to edit this file - overrides happen conversationally. 档位 → CSS 语义：[references/dials.md](references/dials.md)。
 
 ### 1.A Dial Inference (design read → dial values)
 | Signal | VARIANCE | MOTION | DENSITY |
@@ -164,6 +164,9 @@ Discouraged by default in code, markup, and visible text. Replace symbols with i
 
 ### 3.F Dependency Verification (mandatory)
 Before importing ANY 3rd-party library, check `package.json`. If the package is missing, output the install command first. **Never** assume a library exists.
+
+### 3.G Visual QA（声称完成前 mandatory）
+读 [references/visual-qa.md](references/visual-qa.md)。没截图、没过 checklist，不算完成。
 
 ---
 
@@ -368,152 +371,7 @@ These are tools, not defaults. Use them when the design read calls for them. **N
 * **"Motion claimed, motion shown."** If `MOTION_INTENSITY > 4`, the page must actually move: entry transitions on hero, scroll-reveal on key sections, hover physics on CTAs, at minimum. A static page that claims `MOTION_INTENSITY: 7` is broken. Conversely, if you cannot ship working motion in the available scope, drop the dial to 3 and ship a clean static page. Never half-build motion that breaks (cut-off ScrollTriggers, jumpy enters, missing cleanups).
 * **MOTION MUST BE MOTIVATED (mandatory).** Before adding any animation, ask: "what does this animation communicate?" Valid answers: hierarchy (drawing attention to the right thing), storytelling (revealing content in sequence that matches a narrative), feedback (acknowledging a user action), state transition (showing something changed). Invalid answer: "it looked cool". GSAP everywhere because GSAP is available is amateur. Each ScrollTrigger, each marquee, each pinned section needs a reason. If you cannot articulate the reason in one sentence, drop the animation.
 * **MARQUEE MAX-ONE-PER-PAGE (mandatory).** Horizontal scrolling text marquees ("logos endlessly scrolling", "manifesto scrolling sideways", "kinetic word strip") are appropriate at most ONCE per page. Two or more marquees on the same page reads as lazy filler. Pick the one section where the marquee actually serves the content; the others get a different layout.
-* **GSAP Sticky-Stack Pattern (when scroll-stack is used).** A "card stack on scroll" must be a REAL sticky-stack, not a sequential reveal list. See Section 5.A below for the canonical code skeleton. Common failure: trigger fires halfway through scroll instead of pinning at viewport top. Fix: `start: "top top"` not `start: "top center"` or `"top 80%"`.
-* **GSAP Horizontal-Pan Pattern (when horizontal scroll-hijack is used).** See Section 5.B below for the canonical skeleton. Common failure: animation starts before the section is pinned, so the user sees half a slide. Same fix: `start: "top top"`, pin the wrapper, scrub the inner track.
-
-### 5.A Sticky-Stack - Canonical Skeleton
-
-```tsx
-"use client";
-import { useRef, useEffect } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useReducedMotion } from "motion/react";
-
-gsap.registerPlugin(ScrollTrigger);
-
-export function StickyStack({ cards }: { cards: React.ReactNode[] }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const reduce = useReducedMotion();
-
-  useEffect(() => {
-    if (reduce || !ref.current) return;
-    const ctx = gsap.context(() => {
-      const cardEls = gsap.utils.toArray<HTMLElement>(".stack-card");
-      cardEls.forEach((card, i) => {
-        if (i === cardEls.length - 1) return;
-        ScrollTrigger.create({
-          trigger: card,
-          start: "top top",                              // pin at viewport top
-          endTrigger: cardEls[cardEls.length - 1],
-          end: "top top",
-          pin: true,
-          pinSpacing: false,
-        });
-        gsap.to(card, {
-          scale: 0.92,
-          opacity: 0.55,
-          ease: "none",
-          scrollTrigger: {
-            trigger: cardEls[i + 1],
-            start: "top bottom",
-            end: "top top",
-            scrub: true,
-          },
-        });
-      });
-    }, ref);
-    return () => ctx.revert();
-  }, [reduce]);
-
-  return (
-    <div ref={ref} className="relative">
-      {cards.map((card, i) => (
-        <div
-          key={i}
-          className="stack-card sticky top-0 min-h-[100dvh] flex items-center justify-center"
-        >
-          {card}
-        </div>
-      ))}
-    </div>
-  );
-}
-```
-
-Critical points: `start: "top top"`, `pin: true`, every card except the last is pinned, the scale/opacity transform is driven by the NEXT card's scroll trigger (so previous card shrinks as next one arrives).
-
-### 5.B Horizontal-Pan - Canonical Skeleton
-
-```tsx
-"use client";
-import { useRef, useEffect } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useReducedMotion } from "motion/react";
-
-gsap.registerPlugin(ScrollTrigger);
-
-export function HorizontalPan({ children }: { children: React.ReactNode }) {
-  const wrap = useRef<HTMLDivElement>(null);
-  const track = useRef<HTMLDivElement>(null);
-  const reduce = useReducedMotion();
-
-  useEffect(() => {
-    if (reduce || !wrap.current || !track.current) return;
-    const ctx = gsap.context(() => {
-      const distance = track.current!.scrollWidth - window.innerWidth;
-      gsap.to(track.current, {
-        x: -distance,
-        ease: "none",
-        scrollTrigger: {
-          trigger: wrap.current,
-          start: "top top",                              // pin starts when section top hits viewport top
-          end: () => `+=${distance}`,                    // scroll distance = track width minus viewport
-          pin: true,
-          scrub: 1,
-          invalidateOnRefresh: true,
-        },
-      });
-    }, wrap);
-    return () => ctx.revert();
-  }, [reduce]);
-
-  return (
-    <section ref={wrap} className="relative overflow-hidden">
-      <div ref={track} className="flex h-[100dvh] items-center">
-        {children}
-      </div>
-    </section>
-  );
-}
-```
-
-Critical points: `start: "top top"`, `pin: true`, `end: "+=${distance}"` (scroll length = horizontal travel needed), `scrub: 1`. The wrapper is pinned, the inner track slides horizontally as the user scrolls vertically.
-
-### 5.C Scroll-Reveal Stagger - Canonical Skeleton (lighter alternative)
-
-For simple "items appear as they enter viewport" (no pinning), prefer Motion's `whileInView` over GSAP - lighter, no ScrollTrigger needed:
-
-```tsx
-"use client";
-import { motion, useReducedMotion } from "motion/react";
-
-export function RevealStagger({ items }: { items: string[] }) {
-  const reduce = useReducedMotion();
-  return (
-    <ul className="grid gap-6">
-      {items.map((item, i) => (
-        <motion.li
-          key={item}
-          initial={reduce ? false : { opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{
-            duration: 0.6,
-            delay: i * 0.06,
-            ease: [0.16, 1, 0.3, 1],
-          }}
-        >
-          {item}
-        </motion.li>
-      ))}
-    </ul>
-  );
-}
-```
-
-Use this for: feature lists, testimonial grids, logo walls, anything that just needs "enter on scroll." Save GSAP for actual pin/scrub work.
+* **GSAP Sticky-Stack / Horizontal-Pan：** 必须真 pin。骨架与 `start: "top top"` 失败模式 → [references/motion.md](references/motion.md)。无 pin 的入场用 Motion `whileInView`，不要上 GSAP。
 
 ### 5.D Forbidden Animation Patterns
 
@@ -558,26 +416,6 @@ NEVER spam arbitrary `z-50` or `z-10`. Use z-index strictly for systemic layer c
 
 ---
 
-## 7. DIAL DEFINITIONS (Technical Reference)
-
-### DESIGN_VARIANCE (Level 1-10)
-* **1-3 (Predictable):** Symmetrical CSS Grid (12-col, equal fr-units), equal paddings, centered alignment.
-* **4-7 (Offset):** `margin-top: -2rem` overlaps, varied image aspect ratios (4:3 next to 16:9), left-aligned headers over center-aligned data.
-* **8-10 (Asymmetric):** Masonry layouts, CSS Grid with fractional units (`grid-template-columns: 2fr 1fr 1fr`), massive empty zones (`padding-left: 20vw`).
-* **MOBILE OVERRIDE:** For levels 4-10, asymmetric layouts above `md:` MUST collapse to strict single-column (`w-full`, `px-4`, `py-8`) on viewports `< 768px`.
-
-### MOTION_INTENSITY (Level 1-10)
-* **1-3 (Static):** No automatic animations. CSS `:hover` and `:active` states only. `prefers-reduced-motion` is the default mode anyway.
-* **4-7 (Fluid CSS):** `transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1)`. `animation-delay` cascades for load-ins. Focus on `transform` and `opacity`.
-* **8-10 (Advanced Choreography):** Complex scroll-triggered reveals, parallax, scroll-driven animation (CSS `animation-timeline` or GSAP ScrollTrigger). Use Motion hooks. **NEVER use `window.addEventListener('scroll')`** - it is a hard ban, not a "prefer-not." See Section 5.D for the allowed alternatives.
-
-### VISUAL_DENSITY (Level 1-10)
-* **1-3 (Art Gallery):** Lots of white space. Huge section gaps (`py-32` to `py-48`). Expensive, clean.
-* **4-7 (Daily App):** Standard web app spacing (`py-16` to `py-24`).
-* **8-10 (Cockpit):** Tight paddings. No card boxes; 1px lines separate data. Mandatory: `font-mono` for all numbers.
-
----
-
 ## 8. DARK MODE PROTOCOL
 
 Dual-mode by default. Never assume light-only unless the brief is print-emulating editorial.
@@ -601,6 +439,9 @@ Open the page in both modes during development. Do not ship a page you've only s
 
 ---
 
+→ 详见 [references/visual-qa.md](references/visual-qa.md)：截图验收（完成门闩）
+→ 详见 [references/dials.md](references/dials.md)：三个 dial 的 CSS 语义
+→ 详见 [references/motion.md](references/motion.md)：GSAP pin / Motion reveal 骨架
 → 详见 [references/ai-tells.md](references/ai-tells.md)：AI 痕迹禁用模式清单
 → 详见 [references/vocabulary.md](references/vocabulary.md)：参考词汇表 + Redesign 协议
 → 详见 [references/block-library.md](references/block-library.md)：Block Library（组件实现库）

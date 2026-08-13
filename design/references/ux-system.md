@@ -152,13 +152,7 @@ P2   编辑单个字段使用 Modal，交互成本过高。
 P2   空状态没有下一步 CTA。
 ```
 
-**Screenshot 必须**：按钮太多、层级不清晰、首屏密度过高、两个 Card 权重相同、过滤器占过多空间——这些从源码看不出来。流程：
-
-```text
-frontend task → run app → capture screenshot
-→ review screenshot（current vs reference page：布局/密度/交互入口/视觉层级偏差）
-→ interaction check
-```
+**Screenshot 必须**：按钮太多、层级不清晰、首屏密度过高——这些从源码看不出来。怎么拍、怎么过 → [visual-qa.md](visual-qa.md)。
 
 ### 16.H UX Lint Checklist（每次完成逐条过）
 
@@ -250,7 +244,7 @@ frontend task 全流程：
 
 ```text
 需求 → 识别 page pattern → 找 reference implementation
-→ UX plan（5 问）→ Implement → Visual Check → UX Review
+→ UX plan（5 问）→ Implement → Visual Check（[visual-qa.md](visual-qa.md)）→ UX Review
 → Finish → 新可复用知识回写 spec
 ```
 

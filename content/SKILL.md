@@ -1,6 +1,8 @@
 ---
 name: content
-description: When the user wants to write, rewrite, or improve marketing copy for any page — including homepage, landing pages, pricing pages, feature pages, about pages, or product pages. Also use when the user says "write copy for," "improve this copy," "rewrite this page," "marketing copy," "headline help," "CTA copy," "value proposition," "tagline," "subheadline," "hero section copy," "above the fold," "this copy is weak," "make this more compelling," or "help me describe my product." Use this whenever someone is working on website text that needs to persuade or convert. For email copy, see emails. For popup copy, see popups. For editing existing copy, see copy-editing. For the offer underneath the copy (bonuses, guarantees, value framing), see offers.
+description: >-
+  Write or rewrite marketing/conversion copy for web pages (homepage, landing, pricing, features, about).
+  Use when the user asks for headlines, CTAs, value propositions, or to make page copy more compelling.
 metadata:
   version: 2.0.1
 ---
@@ -76,8 +78,6 @@ Each section should advance one argument. Build a logical flow down the page.
 - Passive voice constructions?
 - Exclamation points? (remove them)
 - Marketing buzzwords without substance?
-
-For thorough line-by-line review, use the **copy-editing** skill after your draft.
 
 ---
 
@@ -242,14 +242,6 @@ For headlines and CTAs, provide 2-3 options:
 - Meta description
 
 ---
-
-## Related Skills
-
-- **copy-editing**: For polishing existing copy (use after your draft)
-- **cro**: If page structure/strategy needs work, not just copy
-- **emails**: For email copywriting
-- **popups**: For popup and modal copy
-- **ab-testing**: To test copy variations
 
 ## References（按需读取）
 - humanizer.md — 文案去 AI 味（人性化改写）
