@@ -16,6 +16,7 @@ metadata:
 
 ## Before Writing
 
+0. 事件源是 linux.do（或其它 Discourse 论坛）时，用 `references/linuxdo-fetch.md` 的方法抓原始讨论（含图片/链接/证据），不要只凭链接猜内容
 1. 必读：`references/algorithm.md`（算法怎么排名）、`references/strategy.md`（运营策略与内容配方）
 2. 输出必须过 humanizer 检查：若存在 `~/.agents/skills/content/references/humanizer.md`，按它的清单逐条查；否则按下文「去 AI 味清单」自查
 3. 收集上下文（用户没给就问，一次问完）：
@@ -26,6 +27,10 @@ metadata:
 ## Workflow
 
 ### Step 1：拆事件（5 分钟内完成）
+
+**重要：写的是「事件本身」的文章，不是「关于讨论的评论」。** 讨论帖里的阴谋论/口水战只提取事实与证据（分数、测试配置、对照实验、GitHub 链接、图片），写文章时以事件和证据链为骨架，口水战只作为背景一句带过（如果有戏剧性可当钩子）。
+
+- 证据优先：数字、对照实验、截图、文档链接都收集进文章，爆款文章必须有可查证的硬料
 
 | 拆解项 | 问题 |
 |--------|------|
@@ -40,7 +45,7 @@ metadata:
 |------|------|------|
 | 单条 ≤280 字 | 快讯、观点 | 快讯拼速度，观点拼立场 |
 | 长文 >280 字 | 深度分析 | For You 有曝光加成 |
-| Thread 3-10 条 | 教学、复盘、数据揭示 | 最高杠杆，48-72h 持续互动 |
+| Thread 3-10 条 | 教学、复盘、数据揭示、事件文章 | 最高杠杆，48-72h 持续互动；事件文章按证据链拆条 |
 | Quote 引用帖 | 蹭热点 | 必须补增量观点，不许只转不发 |
 
 ### Step 3：写钩子（80% 的时间花在这）
@@ -95,8 +100,10 @@ metadata:
 - [ ] 正文无外链（链接放评论区或 bio）、hashtag ≤3
 - [ ] 通过 humanizer 清单（无 AI 词汇、无 em dash 滥用、长短句交错）
 - [ ] 字数合规：普通帖 ≤280 字，长文/thread 除外且每条自包含
+- [ ] 标签合规：小红书 3-6 个（热+中+长尾组合），X ≤1 个
 
 ## References
 
 - `references/algorithm.md` — X 开源算法要点：For You 管道、打分公式、新号扶持、权重误区
 - `references/strategy.md` — crypto+AI 运营策略：定位、内容配方、时机、复盘指标、红线
+- `references/linuxdo-fetch.md` — 抓取 linux.do 帖子讨论的方法（RSS + slug，绕过 Cloudflare）
