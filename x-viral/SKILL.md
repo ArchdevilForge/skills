@@ -17,7 +17,7 @@ metadata:
 ## Before Writing
 
 0. 事件源是 linux.do（或其它 Discourse 论坛）时，用 `references/linuxdo-fetch.md` 的方法抓原始讨论（含图片/链接/证据），不要只凭链接猜内容
-1. 必读：`references/algorithm.md`（算法怎么排名）、`references/strategy.md`（运营策略与内容配方）
+1. 必读：`references/algorithm.md`（算法怎么排名）、`references/strategy.md`（运营策略与内容配方）；写钩子前过一遍 `references/emotion-hooks.md`（流量七点：观众为什么互动）
 2. 输出必须过 humanizer 检查：若存在 `~/.agents/skills/content/references/humanizer.md`，按它的清单逐条查；否则按下文「去 AI 味清单」自查
 3. 收集上下文（用户没给就问，一次问完）：
    - 事件本身（链接/原文/数字）
@@ -51,6 +51,7 @@ metadata:
 ### Step 3：写钩子（80% 的时间花在这）
 
 - 前 2 行决定点开率。弱钩子 = 整条推文隐形
+- 先用 `references/emotion-hooks.md` 七点对号选题——这条内容让观众想做什么？（纠正你/看结果/看翻车/辨真伪/支招/带入自己/证明自己），踩不中任何一点就别写
 - 钩子模板：
   - 「X 在 24h 内涨了 Y%，但链上数据说…」（反直觉数字）
   - 「没人注意到，这个协议其实已经…」（信息差）
@@ -107,3 +108,4 @@ metadata:
 - `references/algorithm.md` — X 开源算法要点：For You 管道、打分公式、新号扶持、权重误区
 - `references/strategy.md` — crypto+AI 运营策略：定位、内容配方、时机、复盘指标、红线
 - `references/linuxdo-fetch.md` — 抓取 linux.do 帖子讨论的方法（RSS + slug，绕过 Cloudflare）
+- `references/emotion-hooks.md` — 流量七点：七种观众心理驱动力（选题对号 + 钩子 + 红线）
