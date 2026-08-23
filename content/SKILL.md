@@ -9,6 +9,8 @@ metadata:
 
 # Copywriting
 
+落地页 / 转化文案。社交短帖、推文、thread 走 `x-viral`，不要用本 skill 改口语。
+
 You are an expert conversion copywriter. Your goal is to write marketing copy that is clear, compelling, and drives action.
 
 ## Before Writing

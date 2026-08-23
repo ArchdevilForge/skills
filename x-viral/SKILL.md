@@ -13,7 +13,7 @@ metadata:
 
 # X 内容与账号增长（crypto+AI）
 
-你同时是 X 内容策略师、crypto+AI 领域创作者和增长分析师。目标是用有证据的原创价值换取真实互动，不承诺曝光、涨粉或收益；平台权重和变现规则会变化，固定数字只能作为待验证的实验假设。
+用会发推的人的口气写：先当自己被这事戳到，再把事件讲清楚。目标是用有证据的原创价值换取真实互动，不承诺曝光、涨粉或收益；平台权重和变现规则会变化，固定数字只能作为待验证的实验假设。
 
 ## Before Writing
 
@@ -21,7 +21,7 @@ metadata:
 
 0. 事件源是 linux.do（或其它 Discourse 论坛）时，用 `references/linuxdo-fetch.md` 的方法抓原始讨论（含图片/链接/证据），不要只凭链接猜内容
 1. 必读：`references/algorithm.md`（候选与排序的公开结构）、`references/strategy.md`（运营策略与冷启动）；写钩子前过一遍 `references/emotion-hooks.md`（流量七点）
-2. 输出必须过 humanizer 检查：若存在 `~/.agents/skills/content/references/humanizer.md`，按它的清单逐条查；否则按下文「去 AI 味清单」自查
+2. 写完读 `references/voice.md`，按口播对照改一稿；humanizer 只查词，不代替口播
 3. 按意图选路线：
    - **事件成文**：用户给了事件、新闻、快讯、alpha，要单帖、thread、quote 或钩子时走路线 A
    - **账号增长**：用户问冷启动、账号诊断、涨粉、互动、内容日历或定位时走路线 B
@@ -63,7 +63,7 @@ metadata:
 
 - 前 2 行决定点开率。弱钩子 = 整条推文隐形
 - 先用 `references/emotion-hooks.md` 七点对号选题——这条内容让观众想做什么？（纠正你/看结果/看翻车/辨真伪/支招/带入自己/证明自己），踩不中任何一点就别写
-- 钩子模板：
+- 钩子用口语抱怨或具体场景开头；下面的模板只借结构，不借腔调：
   - 「X 在 24h 内涨了 Y%，但链上数据说…」（反直觉数字）
   - 「没人注意到，这个协议其实已经…」（信息差）
   - 「都在喊 X 是下一个热点，我不同意，理由如下」（挑衅站队）
@@ -78,15 +78,9 @@ metadata:
 - 发帖后 1 小时内优先回复有内容的善意评论，补充证据或承认不确定；辱骂、骚扰和重复垃圾评论不必对线
 - 主动评论要有上下文和增量观点，禁止复制粘贴、批量 @ 或把熟人互动组织成互刷网络
 
-### Step 5：去 AI 味
+### Step 5：口播
 
-用 humanizer 清单自查，重点查这 5 条（crypto 推文高发）：
-1. em dash（—）滥用 → 换成逗号/句号
-2. rule of three 堆砌 → 砍到两点或一个
-3. AI 词汇：delve / landscape / showcase / underscore / pivotal / testament → 换大白话
-4. 「It's not just X, it's Y」式否定排比 → 直接说 Y
-5. 中性播报腔 → 加第一人称、具体感受、明确立场
-6. 每个推文句子长短交错，短句收尾
+读 `references/voice.md`，按对照改到能读出声。humanizer 词表可顺手扫，但过了词表仍像新闻就重写。
 
 ### Step 6：交付格式
 
@@ -181,6 +175,7 @@ metadata:
 - [ ] 有原创增量和至少 1 个自然互动入口，不靠诱导互刷
 - [ ] X 正文不在钩子处堆外链；需要证据时最多保留 1 个相关来源，hashtag ≤2
 - [ ] 通过 humanizer 清单（无 AI 词汇、无 em dash 滥用、长短句交错）
+- [ ] 读出声像微信，不像新闻或金句排比（见 voice.md）
 - [ ] 字数合规：普通帖 ≤280 字，长文/thread 除外且每条自包含
 
 ### 账号增长 / 收益准备
@@ -196,4 +191,5 @@ metadata:
 - `references/strategy.md` — crypto+AI 运营策略：定位、内容配方、时机、复盘指标、红线
 - `references/linuxdo-fetch.md` — 抓取 linux.do 帖子讨论的方法（RSS + slug，绕过 Cloudflare）
 - `references/emotion-hooks.md` — 流量七点：七种观众心理驱动力（选题对号 + 钩子 + 红线）
+- `references/voice.md` — 口播：微信口气，对照稿，完成标准是读出声
 - 官方核验：回答收益或政策问题时，查看 `help.x.com` 的 Platform Manipulation and Spam、Creator Monetization/Rewards 和适用条款
