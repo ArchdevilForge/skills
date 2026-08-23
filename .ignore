@@ -1,0 +1,3 @@
+# Ignore repo docs that are not skills — prevents "description is required" diagnostics
+AGENTS.md
+README.md
