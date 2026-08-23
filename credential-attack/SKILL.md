@@ -170,7 +170,7 @@ RIGHT (spray order, distributes failures):
   ...
 ```
 
-Our `tools/_spray_http_form.py` and `_spray_oauth.py` enforce spray order.
+Our `"${HOME}/.agents/bughunter/bbhunt-tool" _spray_http_form.py` and `_spray_oauth.py` enforce spray order.
 
 ---
 
@@ -261,7 +261,7 @@ Natural user instinct is `--post-data "username={USER}&password={PASSWORD}"`. Ou
 
 `theHarvester -f recon/<target>/osint/theharvester` does NOT write to that path. It writes `theharvester.json` to `$PWD` (the directory you ran the command from).
 
-**Fix:** `tools/osint_employees.sh` wraps the call in `(cd "$OUT_DIR" && theHarvester ... -f theharvester)`. If you invoke theHarvester directly, `cd` first.
+**Fix:** `"${HOME}/.agents/bughunter/bbhunt-tool" osint_employees.sh` wraps the call in `(cd "$OUT_DIR" && theHarvester ... -f theharvester)`. If you invoke theHarvester directly, `cd` first.
 
 ### Pitfall 5 — CrossLinked / theHarvester returning 0 emails
 
@@ -373,10 +373,10 @@ When our default tool fails or you want to swap, here's the practical ladder. To
 ## DEEP DIVE
 
 For the underlying tools' own docs:
-- `tools/wordlist_engine.sh -h`
-- `tools/osint_employees.sh -h`
-- `tools/breach_checker.py -h`
-- `tools/spray_orchestrator.sh -h`
+- `"${HOME}/.agents/bughunter/bbhunt-tool" wordlist_engine.sh -h`
+- `"${HOME}/.agents/bughunter/bbhunt-tool" osint_employees.sh -h`
+- `"${HOME}/.agents/bughunter/bbhunt-tool" breach_checker.py -h`
+- `"${HOME}/.agents/bughunter/bbhunt-tool" spray_orchestrator.sh -h`
 
 ---
 

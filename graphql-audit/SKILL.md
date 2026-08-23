@@ -34,19 +34,19 @@ description: GraphQL security hunting — introspection abuse, field suggestion 
 
 ```bash
 # Basic audit
-bash tools/graphql_audit.sh https://target.com/graphql
+"${HOME}/.agents/bughunter/bbhunt-tool" graphql_audit.sh https://target.com/graphql
 
 # With auth cookie
-bash tools/graphql_audit.sh https://target.com/api/graphql --cookie "session=abc123"
+"${HOME}/.agents/bughunter/bbhunt-tool" graphql_audit.sh https://target.com/api/graphql --cookie "session=abc123"
 
 # With Authorization header
-bash tools/graphql_audit.sh https://target.com/graphql --header "Authorization: Bearer TOKEN"
+"${HOME}/.agents/bughunter/bbhunt-tool" graphql_audit.sh https://target.com/graphql --header "Authorization: Bearer TOKEN"
 
 # Through Burp proxy
-bash tools/graphql_audit.sh https://target.com/graphql --proxy http://127.0.0.1:8080
+"${HOME}/.agents/bughunter/bbhunt-tool" graphql_audit.sh https://target.com/graphql --proxy http://127.0.0.1:8080
 
 # Custom output directory
-bash tools/graphql_audit.sh https://target.com/graphql --output-dir ./findings/target/graphql
+"${HOME}/.agents/bughunter/bbhunt-tool" graphql_audit.sh https://target.com/graphql --output-dir ./findings/target/graphql
 ```
 
 **Output:** `findings/<target>/graphql/<timestamp>/`

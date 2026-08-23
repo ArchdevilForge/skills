@@ -143,13 +143,13 @@ Run the token scanner tool for fast red flag detection:
 
 ```bash
 # EVM token
-python3 tools/token_scanner.py contracts/Token.sol
+"${HOME}/.agents/bughunter/bbhunt-tool" token_scanner.py contracts/Token.sol
 
 # Solana program
-python3 tools/token_scanner.py programs/token/ --chain solana --recursive
+"${HOME}/.agents/bughunter/bbhunt-tool" token_scanner.py programs/token/ --chain solana --recursive
 
 # Full directory scan with report
-python3 tools/token_scanner.py src/ --recursive --output findings/token-report.md
+"${HOME}/.agents/bughunter/bbhunt-tool" token_scanner.py src/ --recursive --output findings/token-report.md
 ```
 
 The scanner checks all 8 bug classes via regex patterns. It catches:
