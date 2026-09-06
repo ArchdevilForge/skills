@@ -1,8 +1,8 @@
 # Motion skeletons（GSAP pin / Motion reveal）
 
-（从主文件分流。只在 `MOTION_INTENSITY` 真正需要 pin/scrub/stagger 时读取。）
+只在用户需要 pin/scrub/stagger 时读取。下面是需按页面适配的示例，不是必须安装 GSAP + Motion 的要求；普通 sticky/transition 优先原生 CSS。
 
-Sticky-stack / horizontal-pan 必须是真 pin，不是顺序 reveal。失败模式：`start: "top center"` 或 `"top 80%"` → 改 `start: "top top"`。
+若需求是真正的滚动固定，验证元素确实固定而非仅入场。示例采用 `start: "top top"`；实际 offset 应考虑导航高度、容器和视口。适配后验证 resize、内容变化、空内容及 reduced-motion，不能把示例直接当作验收通过。
 
 ## Sticky-Stack
 

@@ -4,7 +4,7 @@
 
 ## 10. REFERENCE VOCABULARY (Pattern Names the Agent Should Know)
 
-This is a vocabulary, not a library. The agent should KNOW these pattern names to communicate about them, design with them in mind, and reach for them when the design read calls for them. **Implementations and code sketches live in the Block Library (Section 12), which is populated iteratively.**
+This is a vocabulary, not a library. The agent should KNOW these pattern names to communicate about them, design with them in mind, and reach for them when the design read calls for them. For maintaining a reusable collection, see [block guidance](block-library.md); no populated implementation library is bundled.
 
 ### Hero Paradigms
 * **Asymmetric Split Hero** - Text on one side, asset on the other, generous white space.
@@ -73,10 +73,11 @@ This is a vocabulary, not a library. The agent should KNOW these pattern names t
 * **Lens Blur Depth** - Background UI blurred to focus foreground action.
 
 ### Animation Library Choice
-* **Motion (`motion/react`)** - default for UI / Bento / state-change motion.
+* **Native CSS** - first choice for simple transitions and feedback.
+* **Motion (`motion/react`)** - useful for UI/state-change motion when already installed or justified.
 * **GSAP + ScrollTrigger** - for full-page scrolltelling and scroll hijacks. Isolate in dedicated leaf components with `useEffect` cleanup.
 * **Three.js / WebGL** - for canvas backgrounds and 3D scenes. Same isolation rule.
-* **NEVER mix GSAP / Three.js with Motion in the same component tree.** They fight over the same frames.
+* Keep animation ownership explicit: avoid two libraries driving the same property on the same element. Separate components may use different engines when justified.
 
 ---
 
@@ -85,7 +86,7 @@ This is a vocabulary, not a library. The agent should KNOW these pattern names t
 This skill handles **greenfield builds AND redesigns**. Misclassifying the mode is the single biggest source of bad redesign output.
 
 ### 11.A Detect the Mode (first action)
-* **Greenfield** - no existing site, or full overhaul approved. Dial baseline from Section 1.
+* **Greenfield** - no existing site, or full overhaul approved. Choose the visual direction from the brief; [dials](dials.md) are optional shorthand.
 * **Redesign - Preserve** - modernise without breaking the brand. Audit first, extract brand tokens, evolve gradually.
 * **Redesign - Overhaul** - new visual language on top of existing content. Treat as greenfield for visuals; preserve content and IA.
 
@@ -98,12 +99,12 @@ Document the current state before proposing changes:
 * **Content blocks** - what exists, what's doing work, what's filler.
 * **Patterns to preserve** - signature interactions, recognisable hero, copy voice.
 * **Patterns to retire** - AI-slop tells, broken layouts, dead links, generic stock imagery, perf traps.
-* **Dial reading of the existing site** - infer current `DESIGN_VARIANCE` / `MOTION_INTENSITY` / `VISUAL_DENSITY`. That's your starting point, not the baseline.
+* **Existing visual language** - preserve its density and motion unless changing them serves the requested redesign.
 * **SEO baseline** - current ranking pages, meta titles, structured data, OG cards. **SEO migration is the #1 redesign risk.**
 
 ### 11.C Preservation Rules
 * **Do not change information architecture** unless asked. Keep page slugs, anchor IDs, primary nav labels stable for SEO and muscle memory.
-* **Extract brand colors before applying Section 4.2.** A brand that is already purple stays purple - apply the LILA RULE's override.
+* **Preserve brand colors** unless a palette change is requested. No generic anti-slop preference overrides an established brand.
 * **Preserve copy voice** unless asked for a rewrite. Visual modernisation ≠ content rewrite.
 * **Honor existing accessibility wins.** Do not regress focus states, alt text, keyboard nav, contrast.
 * **Respect existing analytics events.** Do not rename buttons, form fields, section IDs that downstream tracking depends on.
@@ -118,7 +119,7 @@ Apply in order - stop when the brief is satisfied:
 6. **Full block replacement** - only when the existing block is unsalvageable.
 
 ### 11.E Decision Tree: Targeted Evolution vs Full Redesign
-* IA, content, and SEO sound → **targeted evolution** (Levers 1-4). ~70% of value at ~40% of risk.
+* IA, content, and SEO sound → **targeted evolution** of the elements implicated by the brief; do not infer a full redesign.
 * Visual debt is structural (broken IA, no design system, broken mobile) → **full redesign** with strict content preservation.
 * Brand itself is changing → **greenfield**.
 

@@ -4,7 +4,7 @@
 
 # APPENDICES - Real Source-Backed Reference Material
 
-The sections below are vendored reference content. They give the agent real install commands, real canonical doc links, and real working starter snippets for each design system named in Section 2. Use them to ground decisions in production reality, not training-data fiction.
+Historical installation examples and official source links. Read only the selected system's section; verify its current API and the project's package manager before use. These commands do not authorize installing every listed library.
 
 ## Appendix A - Install Commands per Design System
 
@@ -225,4 +225,4 @@ But that is **web glassmorphism / frosted-glass approximation**, not official Ap
 
 ---
 
-**End of appendices.** Install commands above are reality anchors. The Apple Liquid Glass skeleton is a labeled approximation, not an Apple-issued package. For canonical docs per design system, consult the system's official docs (links in Section 2 plus Appendix B).
+The Apple Liquid Glass skeleton is a labeled approximation, not an Apple-issued package. Use Appendix B to verify the selected design system's current documentation.

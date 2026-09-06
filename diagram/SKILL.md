@@ -1,144 +1,35 @@
 ---
 name: diagram
-description: generate, refine, validate, and render diagrams from natural language, notes, code snippets, schemas, tables, or existing diagram source. use for flowcharts, swimlanes, sequence diagrams, state diagrams, er diagrams, class diagrams, architecture/c4-style diagrams, dependency graphs, gantt charts, mind maps, user journeys, sankey-style flows, org charts, network graphs, and other visual models. supports mermaid by default, graphviz dot for complex graph layout, plantuml for uml-heavy engineering diagrams, and svg output when direct markup is more reliable.
+description: Create, edit or render technical/business diagrams, including flows, sequences, architecture and ER models, using Mermaid, DOT, PlantUML or SVG.
 ---
 
-# Diagram Generator
+# Diagrams
 
-## Default workflow
+Use the source material's entities, relationships, boundaries and ordering. Preserve terminology; clarify only ambiguity that changes the model, otherwise state a small assumption.
 
-1. Identify the user's intent, audience, and source material.
-2. Choose the diagram family and language using the decision table below.
-3. Normalize entities, relationships, labels, states, branches, and time/order information before writing diagram code.
-4. Generate concise, readable diagram source.
-5. Validate the syntax mentally and, when creating files, run `scripts/render_diagram.py`.
-6. Return the diagram source plus a short note about assumptions. When files are generated, include links to the output files.
+## Choose the representation
 
-Do not over-ask for clarification. If the request is underspecified, make reasonable assumptions and label them briefly.
+| Need | Prefer |
+|---|---|
+| Flow, sequence, state, ER, class, timeline, mind map | Mermaid |
+| Dense dependency/network graph or precise cluster layout | Graphviz DOT |
+| Formal UML or existing PlantUML source | PlantUML |
+| Custom visual not well represented above | Accessible SVG with title and meaningful labels |
 
-## Diagram language decision table
+Keep the user's existing diagram language unless conversion is requested. For syntax patterns, read only the matching section of [diagram patterns](references/diagram-patterns.md).
 
-Use Mermaid unless another language is clearly better.
+Use stable ASCII IDs and short readable labels. Show important decisions, failures and boundaries when present in the source, not invented complexity. Default to one useful diagram and editable source; image-only requests need not include source inline.
 
-| User wants | Prefer | Why |
-|---|---|---|
-| process flow, decision tree, simple swimlane | Mermaid flowchart | readable and easy to paste into Markdown |
-| sequence of system/user interactions | Mermaid sequenceDiagram or PlantUML sequence | Mermaid for docs; PlantUML for UML formality |
-| lifecycle, state machine, transitions | Mermaid stateDiagram-v2 or PlantUML state | compact transition syntax |
-| database schema, entities, relationships | Mermaid erDiagram | portable ER notation |
-| class/interface/object model | Mermaid classDiagram or PlantUML class | Mermaid for docs; PlantUML for detailed UML |
-| project schedule | Mermaid gantt | concise timeline syntax |
-| hierarchy, ideas, notes | Mermaid mindmap | good default for idea maps |
-| customer/product journey | Mermaid journey | built-in journey notation |
-| git history | Mermaid gitGraph | built-in git notation |
-| dependency graph, package graph, large network | Graphviz DOT | better layout engines for dense graphs |
-| architecture with layers, clusters, boundaries | Mermaid flowchart with subgraphs, Graphviz clusters, or PlantUML C4-style | choose based on requested fidelity |
-| weighted flow/sankey-like relationship | Mermaid sankey-beta when supported, otherwise SVG or Graphviz | Mermaid support may vary by renderer |
-| custom visual where source languages fit poorly | SVG | precise control over layout and styling |
+## Render and validate
 
-## Output policy
-
-- Always provide editable source unless the user explicitly asks only for an image.
-- Default to a single best diagram. Offer alternatives only when genuinely useful.
-- Prefer stable, simple syntax over fancy features that may not render in older Mermaid/PlantUML versions.
-- Use short labels. Split long text into notes outside the diagram when needed.
-- Avoid ambiguous node IDs. Use ASCII IDs and human-readable labels.
-- Preserve user terminology, but standardize capitalization within a diagram.
-- For technical diagrams, include boundaries such as client, service, database, queue, external API, and operator/user when they are implied.
-- For business-process diagrams, distinguish happy path, decision points, failures, retries, and manual steps when present.
-- For diagrams created from uncertain text, include an `Assumptions` section after the code.
-
-## Mermaid generation rules
-
-Consult `references/diagram-patterns.md` for compact templates.
-
-General Mermaid rules:
-- Start with the correct diagram directive, for example `flowchart TD`, `sequenceDiagram`, `erDiagram`, `gantt`, `mindmap`, or `journey`.
-- For flowcharts, use `flowchart TD` unless the user asks for left-to-right; use `flowchart LR` for architecture and pipelines.
-- Use subgraphs for swimlanes or architecture layers. Name subgraphs with readable labels.
-- Keep node IDs stable and ASCII-only, for example `ingest_service[Ingest Service]`.
-- Quote labels that contain punctuation likely to confuse the parser.
-- Use decision diamonds for branching: `decision{Condition?}`.
-- Use consistent edge labels: `-- yes -->`, `-- no -->`, `-. async .->`, or `== critical ==>` only when meaningful.
-- In sequence diagrams, declare participants before messages. Use `actor` for humans and `participant` for systems.
-- Use `alt/else/end`, `opt/end`, `loop/end`, and `par/and/end` blocks for conditional, optional, repeated, and parallel flows.
-
-## Graphviz DOT generation rules
-
-Use Graphviz for large, dense, or layout-sensitive relationship diagrams.
-
-- Prefer `digraph G` for directed relationships and `graph G` for undirected networks.
-- Set layout-friendly graph attributes at the top: `rankdir=LR`, `nodesep`, `ranksep`, and `splines=true` when helpful.
-- Use `subgraph cluster_name` for boundaries and subsystems.
-- Use plain labels and restrained styling.
-- Use edge labels only when they add meaning.
-- For many nodes, group by domain with clusters and avoid crossing-heavy all-to-all edges.
-
-## PlantUML generation rules
-
-Use PlantUML when the user asks for UML or needs formal UML notation.
-
-- Wrap diagrams with `@startuml` and `@enduml`.
-- Use `actor`, `participant`, `database`, `queue`, `collections`, or `component` stereotypes when useful.
-- Use `package`, `rectangle`, or `node` for architecture boundaries.
-- For class diagrams, include only important fields/methods unless the user asks for exhaustive detail.
-- For activity diagrams, use clear start/end markers and explicit branch labels.
-
-## SVG generation rules
-
-Use SVG only when text diagram languages cannot express the requested visual reliably.
-
-- Keep SVG simple, accessible, and editable.
-- Include `<title>` and meaningful text labels.
-- Prefer rectangles, lines, arrows, and groups over complex paths.
-- Do not embed external fonts or remote images.
-
-## Rendering files
-
-When the user asks for PNG/SVG/PDF, create a source file and run from this skill directory:
+For a requested file, run from the skill root with absolute paths for external inputs/outputs:
 
 ```bash
-python scripts/render_diagram.py input.mmd --format svg --out output.svg
-python scripts/render_diagram.py input.dot --format png --out output.png
-python scripts/render_diagram.py input.puml --format svg --out output.svg
+uv run --no-project python scripts/render_diagram.py input.mmd --format svg --out output.svg
+uv run --no-project python scripts/render_diagram.py input.dot --format png --out output.png
+uv run --no-project python scripts/render_diagram.py input.puml --format svg --out output.svg
 ```
 
-The renderer is intentionally dependency-tolerant. It tries common local tools and reports actionable installation hints if a renderer is unavailable. Do not claim an image was rendered unless the script completed successfully and the output file exists.
+Reuse installed renderers. If unavailable, deliver the source with the exact rendering limitation; do not claim an image exists. When rendering succeeds, inspect the output for clipping, unreadable labels and wrong edge ordering. A nonempty file alone does not validate meaning or layout.
 
-## Validation checklist
-
-Before finalizing:
-
-- The diagram type matches the user's task.
-- The source is syntactically plausible for the chosen language.
-- Labels are short enough to fit.
-- Edges and message order reflect the input accurately.
-- Assumptions are called out when the input was incomplete.
-- For generated files, the output exists and opens or has nonzero size.
-
-## Common response template
-
-Use this structure for most diagram answers:
-
-```markdown
-下面是可编辑的 [language] 版本：
-
-```[language]
-[source]
-```
-
-Assumptions:
-- [only if needed]
-
-Rendered file: [link] [only if generated]
-```
-
-For English user requests, respond in English. For Chinese user requests, respond in Chinese unless they ask otherwise.
-
-渲染器不可用时 `scripts/render_diagram.py` 会给出安装提示。未跑通脚本不要声称已生成图片。
-
-## 任务完成自检
-
-- [ ] 图类型匹配任务
-- [ ] 源码语法说得通
-- [ ] 若生成了文件：文件存在且非空
+Return the requested artifact/source, its path when saved, and only material assumptions. Do not force a report template or duplicate checklists onto simple diagram answers.

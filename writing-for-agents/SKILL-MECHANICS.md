@@ -1,22 +1,22 @@
 # Skill mechanics
 
-The skill-specific branch of [`writing-for-agents`](SKILL.md): what changes when the document is a skill — frontmatter, the invocation choice, and router skills. Everything else about writing it is the universal reference in `SKILL.md`.
+Use for skill metadata and invocation; general writing guidance is in [the skill](SKILL.md).
 
 ## Invocation
 
-Two choices, trading the two loads:
+- **Automatic discovery**: a short `description` states the task boundary. The host shows it to the model, which may read the skill; users can still request it explicitly.
+- **User-invoked**: where the host supports it, `disable-model-invocation: true` hides the skill from the automatic description list. In pi, invoke it with `/skill:name`.
 
-- A **model-invoked** skill keeps a `description`, so the agent can fire it autonomously — and other skills can reach it. You can still type its name: model-invocation always _includes_ user reach; a description only ever adds agent discovery, never removes the human's. The description is the skill's top-level context pointer, forced to stay loaded at all times — permanent context load in exchange for discoverability. A model-invoked skill whose content is all reference is also one home for shared reference: another skill can invoke it, so reference needed by several skills lives in one place. Mechanics: omit `disable-model-invocation`, and write a model-facing description carrying the trigger branches (the pointer-writing rules in `SKILL.md` apply in full).
-- A **user-invoked** skill strips the description from the agent's reach: only the human typing its name can invoke it, and no other skill can. Zero context load, but it spends cognitive load — you are the index that must remember it exists. Mechanics: set `disable-model-invocation: true`; the `description` becomes human-facing — a one-line summary, trigger lists stripped.
+Hiding discovery is not filesystem access control. A known file can still be read through an explicit pointer or user request; another skill need not pretend the document is inaccessible. Check the current host's metadata support instead of assuming all harnesses behave identically.
 
-Pick model-invocation only when the agent must reach the skill on its own, or another skill must. If it only ever fires by hand, make it user-invoked and pay no context load.
+## Metadata
 
-Shared reference that two user-invoked skills both need can live in neither — with no descriptions, neither can fire the other. Push it to a plain file outside the skill system: external reference any skill can point at.
+Keep the existing name during optimization. Use a concise description that separates genuine near neighbors; don't include procedure, marketing claims or synonym inventories. In pi, names are lowercase letters/digits/hyphens (up to 64 characters) and descriptions allow up to 1024 characters; those limits are ceilings, not targets.
 
-## Splitting by invocation
+Reference documents should not carry skill frontmatter unless intentionally independently discoverable. Keep examples from accidentally becoming installed skills.
 
-The invocation cut of splitting (the sequence cut lives in `SKILL.md`): split off a model-invoked skill when you have a distinct leading word that should trigger it on its own — a trigger word you actually use in your prompts — or another skill must reach it. You pay context load for the new always-loaded description, so that independent reach has to be worth it.
+## Routers
 
-## Router skills
+A router is useful when it lets the agent or user choose one branch without loading all branches. Name the condition and actual relative target; preserve safety/output constraints common to every branch.
 
-When user-invoked skills multiply past what you can remember, that piled-up cognitive load is cured by a **router skill**: one user-invoked skill that names the others and when to reach for each, so the human has one skill to remember instead of many. It can only hint, never fire them: user-invoked skills have no description, so nothing but the human can reach them.
+Create a separate discoverable skill only for an independently useful task boundary. Shared reference can remain a plain document, and a manually invoked router can point to it directly.

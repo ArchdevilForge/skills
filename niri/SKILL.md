@@ -1,76 +1,46 @@
 ---
 name: niri
-description: Control the running niri Wayland compositor — list windows/workspaces/outputs, focus/move/resize windows and columns, manage workspaces, screenshots, spawn apps, watch event stream. Use when user asks to arrange windows, switch workspace, find a window, take a screenshot, or any desktop window management on this machine.
+description: Manage local niri windows, workspaces and monitors, or capture screenshots. DMS theme, wallpaper, audio and notifications belong to dms-shell.
 ---
 
-# niri compositor control
+# niri control
 
-All commands go through `niri msg`. Add `-j` for JSON output (best for parsing).
-Session must be live (`pgrep niri`); commands run as the logged-in user.
+Use `niri msg`; `-j` provides JSON for queries. Commands run as the desktop user and need a live session. Check `niri msg action --help` or the chosen action's `--help` before relying on version-specific options.
 
-## Query state
+## Query and target
 
 ```bash
-niri msg -j windows            # all windows: id, title, app_id, workspace, layout
-niri msg -j workspaces         # workspaces per output
-niri msg -j outputs            # monitors
-niri msg focused-window        # current focus (also -j)
-niri msg pick-window           # click a window to identify it
+niri msg -j windows
+niri msg -j workspaces
+niri msg -j outputs
+niri msg -j focused-window
 ```
 
-Find a window: `niri msg -j windows | jq '.[] | select(.app_id=="firefox") | .id'`
+Select the matching window ID from current state; re-query after spawning or closing windows. Do not guess the active target.
 
-## Actions
+## Actions (substitute the requested target)
 
-```bash
+```text
 niri msg action focus-window --id <ID>
-niri msg action close-window --id <ID>       # omit --id = focused
+niri msg action close-window --id <ID>
 niri msg action fullscreen-window --id <ID>
-niri msg action move-window-to-workspace <name|index> --id <ID>
-niri msg action do-screen-transition          # overview
+niri msg action move-window-to-workspace <name-or-index> --id <ID>
+niri msg action focus-workspace <name-or-index>
+niri msg action set-column-width <width>
+niri msg action set-window-height <height>
+niri msg action toggle-overview
 ```
 
-Columns (niri scrolls horizontally; a column holds stacked windows):
+Other column, monitor and layout operations are listed by the installed help; do not treat slash-separated alternatives as executable commands. `do-screen-transition` is a visual transition, not the overview toggle.
+
+## Screenshots
+
+When `--path` is supported, provide an explicit absolute output path:
 
 ```bash
-focus-column-left/right/first/last    move-column-left/right/to-index
-focus-column-or-monitor-left/right    move-column-to-workspace <ws>
-consume-window-into-column / expel-window-from-column   # merge/unmerge into column
-toggle-column-tabbed-display / set-column-display tabbed
-center-column / center-window
-expand-column-to-available-width
-resize: set-window-height <val> / set-column-width <val>  (e.g. 60 or "+10%")
+niri msg action screenshot-screen --path /tmp/niri-screen.png
 ```
 
-Workspaces:
+Then view the file with the image-reading tool. Otherwise consult the configured `screenshot-path`; do not assume `~/Pictures/Screenshots` or infer success from an unrelated recent file. Use screenshot-window or the interactive picker only when that scope matches the request.
 
-```bash
-focus-workspace <name|index>     move-window-to-workspace <ws>
-move-workspace-to-index <idx> --output <out>
-set-workspace-name <name> --workspace <idx>
-```
-
-Monitors:
-
-```bash
-focus-monitor-left/right/up/down
-move-window-to-new-workspace --monitor-next   # spread across outputs
-power-off-monitors / power-on-monitors
-```
-
-## Screenshots & misc
-
-```bash
-niri msg action screenshot-screen    # saves to ~/Pictures/Screenshots
-niri msg action screenshot-window
-niri msg action screenshot           # interactive UI
-niri msg action spawn -- <cmd...>    # launch app in session
-niri msg action spawn-sh -- "<shell cmd>"
-niri msg event-stream                # live JSON events (pipe through jq)
-```
-
-## Notes
-
-- `screenshot-screen` prints nothing; file lands in `~/Pictures/Screenshots` — verify with `ls -t`.
-- Window `id` is stable until closed; re-query after spawning apps.
-- Full action list: `niri msg action --help`.
+Screenshots may include private content; do not upload them without permission. Closing windows, ending the session, launching commands and changing monitor state require a clear requested action. Verify resulting state; don't leave an unbounded event stream running for a one-shot task.
