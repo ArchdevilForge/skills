@@ -1,0 +1,1249 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>前端动效实验室 Vol.2 · 另外 16 个有名字的模式</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+:root{
+  --bg:#07060d;--panel:#0d0a19;--panel2:#0a0814;--line:rgba(255,255,255,.09);
+  --ink:#efeaff;--dim:#9a92bf;--pink:#ff2fd0;--purple:#7b3dff;--cyan:#4be1ff;--lime:#b6ff3d;--amber:#ffb703;
+  --eo:cubic-bezier(.22,1,.36,1);
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px);background-size:100% 56px;
+  mask-image:radial-gradient(circle at 50% 0%,#000 20%,transparent 85%)}
+.wrap{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:0 20px 120px}
+.dim{color:var(--dim)}
+#bar{position:fixed;top:0;left:0;right:0;height:2px;z-index:60;background:rgba(255,255,255,.06)}
+#barFill{height:100%;background:linear-gradient(90deg,var(--pink),var(--purple),var(--cyan));transform:scaleX(0);transform-origin:0 50%;will-change:transform}
+header.top{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);
+  background:linear-gradient(180deg,rgba(7,6,13,.92),rgba(7,6,13,.6));border-bottom:1px solid var(--line)}
+.top-in{max-width:1080px;margin:0 auto;padding:10px 20px;display:flex;gap:14px;align-items:center}
+.brand{font-family:var(--mono);font-size:13px;letter-spacing:.14em;white-space:nowrap;display:flex;align-items:center;gap:8px}
+.brand i{width:7px;height:7px;border-radius:50%;background:var(--pink);box-shadow:0 0 12px var(--pink);animation:pulse 2.4s var(--eo) infinite}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.6);opacity:.5}}
+nav.toc{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 0}
+nav.toc::-webkit-scrollbar{display:none}
+nav.toc a{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--dim);text-decoration:none;
+  border:1px solid var(--line);border-radius:999px;padding:5px 10px;white-space:nowrap;transition:color .25s,background .25s,border-color .25s}
+nav.toc a:hover{color:var(--ink);background:rgba(255,47,208,.12);border-color:rgba(255,47,208,.45)}
+.hero{padding:84px 0 40px;border-bottom:1px solid var(--line)}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.28em;color:var(--pink);margin:0 0 20px}
+h1{font-size:clamp(28px,5.4vw,54px);line-height:1.08;margin:0 0 20px;letter-spacing:-.02em;font-weight:800}
+h1 em{font-style:normal;background:linear-gradient(92deg,var(--pink),var(--purple) 60%,var(--cyan));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{max-width:60ch;color:var(--dim);font-size:15px;line-height:1.75;margin:0}
+section.lab{padding:70px 0 0;scroll-margin-top:64px}
+.lab-head{display:grid;grid-template-columns:auto 1fr auto auto;gap:12px;align-items:baseline}
+.num{font-family:var(--mono);font-size:11px;color:var(--pink);border:1px solid rgba(255,47,208,.35);border-radius:6px;padding:3px 7px;align-self:center}
+h2{margin:0;font-size:clamp(17px,2.4vw,23px);letter-spacing:-.01em;font-weight:700}
+h2 .cn{font-size:13px;font-weight:400;color:var(--dim);margin-left:10px}
+.rp,.cp{font-family:var(--mono);font-size:11px;color:var(--dim);background:transparent;border:1px solid var(--line);
+  border-radius:999px;padding:5px 11px;cursor:pointer;transition:color .25s,border-color .25s,background .25s;white-space:nowrap}
+.rp:hover,.cp:hover{color:var(--ink);border-color:var(--pink)}
+.cp:hover{background:rgba(255,47,208,.12)}
+.meta{grid-column:2/-1;margin:6px 0 0;font-family:var(--mono);font-size:11.5px;line-height:1.8;color:#7e77a3}
+.meta b{color:#b9b1e0;font-weight:600}
+.snip{grid-column:2/-1;margin:4px 0 0;font-family:var(--mono);font-size:11px;line-height:1.8;color:#6ad1c8;
+  background:rgba(75,225,255,.055);border-left:2px solid rgba(75,225,255,.35);padding:7px 11px;border-radius:0 8px 8px 0;overflow-x:auto;white-space:nowrap}
+.stage{position:relative;margin-top:20px;border:1px solid var(--line);border-radius:16px;overflow:hidden;
+  background:linear-gradient(180deg,var(--panel),var(--panel2));padding:30px}
+.stage.flat{padding:0}
+.bleed{position:relative;margin-top:20px}
+.pin-stage{position:sticky;top:0;height:100vh;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.badge{font-family:var(--mono);font-size:10.5px;padding:4px 9px;border-radius:999px;border:1px solid var(--line);color:var(--dim);align-self:center}
+.badge.ok{color:var(--lime);border-color:rgba(182,255,61,.4);background:rgba(182,255,61,.08)}
+.badge.no{color:var(--amber);border-color:rgba(255,183,3,.4);background:rgba(255,183,3,.08)}
+
+/* 15 preloader */
+.pre{position:relative;height:min(52vh,360px);background:#0a0814;overflow:hidden}
+.pre-panels{position:absolute;inset:0;display:grid;grid-template-columns:repeat(4,1fr)}
+.pre-panels i{background:linear-gradient(180deg,#181031,#0b0916);border-right:1px solid rgba(255,255,255,.06);
+  transform-origin:top;transition:transform .9s var(--eo)}
+.pre-panels i:nth-child(2){transition-delay:.08s}
+.pre-panels i:nth-child(3){transition-delay:.16s}
+.pre-panels i:nth-child(4){transition-delay:.24s}
+.pre.done .pre-panels i{transform:scaleY(0)}
+.pre-num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;transition:opacity .3s}
+.pre.done .pre-num{opacity:0}
+.pre-num b{font-family:var(--mono);font-size:clamp(32px,7vw,64px);font-weight:700;letter-spacing:-.03em}
+.pre-num span{font-family:var(--mono);font-size:10.5px;letter-spacing:.26em;color:var(--dim)}
+.pre-track{width:min(60%,320px);height:2px;background:rgba(255,255,255,.1);overflow:hidden}
+.pre-track i{display:block;height:100%;background:linear-gradient(90deg,var(--pink),var(--cyan));transform-origin:0 50%;transform:scaleX(0)}
+.pre-behind{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+  opacity:0;transition:opacity .65s var(--eo) .35s}
+.pre.done .pre-behind{opacity:1}
+.pre-behind h3{margin:0;font-size:clamp(20px,4vw,40px);letter-spacing:-.02em}
+.pre-behind p{margin:0;font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--lime)}
+
+/* 16 custom cursor */
+.cur-stage{position:relative;height:min(46vh,300px);cursor:none;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.cur-t{display:flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:12px;background:#0b0916;
+  font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--dim);transition:border-color .3s,background .3s}
+.cur-t:hover{border-color:rgba(255,47,208,.5);background:#140d25}
+#curDot,#curRing{position:absolute;top:0;left:0;pointer-events:none;will-change:transform;z-index:5;opacity:0;
+  display:flex;align-items:center;justify-content:center}
+#curDot{width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:var(--pink);box-shadow:0 0 10px var(--pink)}
+#curRing{width:38px;height:38px;margin:-19px 0 0 -19px;border-radius:50%;border:1px solid rgba(255,255,255,.6);
+  font-family:var(--mono);font-size:8px;letter-spacing:.12em;color:#fff;mix-blend-mode:difference;
+  transition:width .3s var(--eo),height .3s var(--eo),margin .3s var(--eo),background .3s,border-color .3s}
+#curRing.big{width:92px;height:92px;margin:-46px 0 0 -46px;background:rgba(255,255,255,.92);border-color:transparent;color:#0b0916;mix-blend-mode:normal}
+#curRing span{opacity:0;transition:opacity .2s}
+#curRing.big span{opacity:1}
+
+/* 17 velocity skew */
+.vsk{display:flex;flex-direction:column;gap:18px;width:100%;will-change:transform;padding:0 0 6px}
+.vrow{display:flex;width:max-content;font-family:var(--mono);font-weight:700;letter-spacing:-.02em;
+  font-size:clamp(28px,6.6vw,74px);white-space:nowrap;will-change:transform;color:#efeaff}
+.vrow span{padding-right:34px}
+.vrow.b{color:transparent;-webkit-text-stroke:1px rgba(255,47,208,.8);font-size:clamp(24px,5.4vw,60px)}
+@keyframes vma{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes vmb{from{transform:translateX(-50%)}to{transform:translateX(0)}}
+.vrow.a{animation:vma 26s linear infinite}
+.vrow.b{animation:vmb 20s linear infinite}
+.vsk-hint{position:absolute;bottom:46px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:10px;letter-spacing:.24em;color:var(--dim);white-space:nowrap}
+.vsk-meter{position:absolute;top:70px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:10px;
+  letter-spacing:.2em;color:var(--cyan);white-space:nowrap}
+
+/* 18 sticky card stack */
+.stack-stage{position:sticky;top:0;height:100vh;overflow:hidden;display:grid;place-items:center}
+.stack-card{position:absolute;width:min(78vw,560px);border:1px solid var(--line);border-radius:18px;overflow:hidden;
+  background:#0b0916;will-change:transform;transform-origin:50% 0%}
+.stack-card .art{height:min(30vh,190px);position:relative}
+.stack-card .body{padding:20px 22px 24px}
+.stack-card h4{margin:0 0 8px;font-size:19px}
+.stack-card p{margin:0;font-size:13px;color:var(--dim);line-height:1.7}
+.stack-card .k{position:absolute;right:14px;top:12px;font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:#fff9}
+.stack-tag{position:absolute;top:74px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:10px;letter-spacing:.24em;color:var(--dim)}
+
+/* 19 coverflow */
+.cf-stage{position:sticky;top:0;height:100vh;overflow:hidden;display:flex;align-items:center;justify-content:center;perspective:1100px}
+.cf-inner{position:relative;width:min(72vw,420px);height:min(56vh,340px);transform-style:preserve-3d}
+.cf-card{position:absolute;inset:0;border-radius:16px;border:1px solid var(--line);overflow:hidden;
+  backface-visibility:hidden;will-change:transform,opacity;background:#0b0916}
+.cf-card .cfl{position:absolute;left:18px;bottom:16px;font-family:var(--mono);font-size:12px;letter-spacing:.16em;z-index:2}
+.cf-card i{position:absolute;inset:0}
+.cf-dots{position:absolute;bottom:60px;left:50%;transform:translateX(-50%);display:flex;gap:8px}
+.cf-dots b{width:22px;height:2px;background:rgba(255,255,255,.2);transition:background .3s}
+.cf-dots b.on{background:var(--pink)}
+
+/* 20 svg draw */
+.drawbox{display:grid;grid-template-columns:1fr auto;gap:26px;align-items:center}
+@media(max-width:700px){.drawbox{grid-template-columns:1fr;justify-items:center}}
+#drawSvg{width:100%;height:auto;max-width:520px}
+#drawPath{filter:drop-shadow(0 0 10px rgba(255,47,208,.55))}
+.ring{width:132px;height:132px;flex:none}
+.ring circle{fill:none;stroke-width:6}
+.ring .bgc{stroke:rgba(255,255,255,.08)}
+#ringFg{stroke:url(#rg);stroke-linecap:round;transform:rotate(-90deg);transform-origin:50% 50%}
+.ring-txt{font-family:var(--mono);font-size:22px;fill:#efeaff;text-anchor:middle;dominant-baseline:central}
+.ring-sub{font-family:var(--mono);font-size:8px;fill:#9a92bf;text-anchor:middle;letter-spacing:.18em}
+
+/* 21 gooey */
+.goo-stage{height:min(46vh,300px);display:grid;place-items:center}
+.goo{position:relative;width:260px;height:230px;filter:url(#gooFilter)}
+.goo .blob,.goo .dot{position:absolute;border-radius:50%;background:linear-gradient(150deg,var(--pink),var(--purple))}
+.goo .blob{left:50%;top:150px;width:104px;height:104px;margin:-52px 0 0 -52px;display:grid;place-items:center;
+  font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:#fff;z-index:3;cursor:pointer;user-select:none}
+.goo .dot{width:56px;height:56px;left:50%;top:150px;margin:-28px 0 0 -28px;display:grid;place-items:center;
+  font-family:var(--mono);font-size:10px;color:#fff;transition:transform .62s var(--eo);z-index:2}
+.goo .dot:nth-child(3){transition-delay:.07s}
+.goo .dot:nth-child(4){transition-delay:.14s}
+.goo.open .dot:nth-child(2){transform:translate(-86px,-84px)}
+.goo.open .dot:nth-child(3){transform:translate(0,-116px)}
+.goo.open .dot:nth-child(4){transform:translate(86px,-84px)}
+.goo-label{position:absolute;bottom:2px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--dim)}
+
+/* 22 view transitions */
+.vt-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media(max-width:700px){.vt-grid{grid-template-columns:repeat(2,1fr)}}
+.vt-item{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#0b0916;cursor:pointer}
+.vt-thumb{height:96px}
+.vt-title{font-family:var(--mono);font-size:11px;letter-spacing:.1em;padding:10px 12px;display:block;color:var(--dim)}
+.vt-detail{position:fixed;inset:0;z-index:70;background:rgba(7,6,13,.86);backdrop-filter:blur(8px);
+  display:none;align-items:center;justify-content:center;padding:24px}
+.vt-detail.open{display:flex}
+.vt-d-panel{width:min(92vw,560px);border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#0b0916;position:relative}
+.vt-d-hero{height:min(34vh,220px);background:radial-gradient(80% 80% at 30% 25%,rgb(var(--hue) / .5),transparent 62%),#0b0916}
+.vt-d-body{padding:20px 22px 26px}
+.vt-d-title{display:inline-block;font-family:var(--mono);font-size:12px;letter-spacing:.12em;color:var(--pink)}
+.vt-d-body p{margin:12px 0 0;font-size:13.5px;color:var(--dim);line-height:1.75}
+.vt-close{position:absolute;right:12px;top:12px;z-index:3;font-family:var(--mono);font-size:11px;background:rgba(0,0,0,.5);
+  border:1px solid var(--line);color:var(--ink);border-radius:999px;padding:5px 10px;cursor:pointer}
+
+/* 23 drag inertia */
+.drag-view{position:relative;height:min(44vh,290px);overflow:hidden;cursor:grab;touch-action:pan-y}
+.drag-view.dragging{cursor:grabbing}
+.drag-track{position:absolute;top:50%;left:0;transform:translateY(-50%);display:flex;gap:16px;padding:0 20px;will-change:transform}
+.drag-card{flex:0 0 min(58vw,250px);height:min(30vh,190px);border:1px solid var(--line);border-radius:14px;background:#0b0916;
+  display:flex;flex-direction:column;justify-content:flex-end;padding:16px;user-select:none;will-change:transform,opacity}
+.drag-card b{font-family:var(--mono);font-size:13px;letter-spacing:.1em}
+.drag-card small{font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:.14em;margin-top:6px}
+.drag-hud{position:absolute;right:14px;bottom:12px;font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--cyan);pointer-events:none}
+
+/* 24 text mask media */
+.tm{position:relative;height:min(46vh,300px);overflow:hidden;background:#000;display:grid;place-items:center}
+.tm canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.tm-mask{position:absolute;inset:0;background:#000;mix-blend-mode:multiply;display:grid;place-items:center;padding:0 10px}
+.tm-mask h3{margin:0;color:#fff;font-weight:900;font-size:clamp(30px,9vw,96px);letter-spacing:.02em;line-height:.95;text-align:center;
+  transition:letter-spacing 1.4s var(--eo)}
+.tm.in .tm-mask h3{letter-spacing:.12em}
+.tm-note{position:absolute;left:14px;bottom:12px;z-index:4;font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:#ffffff88}
+
+/* 25 char roll */
+.roll-line{font-family:var(--mono);font-weight:700;font-size:clamp(22px,5vw,48px);letter-spacing:-.01em;text-align:center;line-height:1.5;user-select:none}
+.rc{position:relative;display:inline-block;overflow:hidden;height:1.08em;vertical-align:-.2em}
+.rc b{display:block;font-weight:700;transition:transform .52s var(--eo);transition-delay:calc(var(--i) * 26ms)}
+.rc .b2{position:absolute;left:0;top:0;transform:translateY(104%);color:var(--pink)}
+.roll-line:hover .rc .b1{transform:translateY(-104%)}
+.roll-line:hover .rc .b2{transform:translateY(0)}
+.roll-hint{text-align:center;font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;color:var(--dim);margin-top:18px}
+
+/* 26 accordion */
+.acc-cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:760px){.acc-cols{grid-template-columns:1fr}}
+.acc-h{font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;color:var(--cyan);margin:0 0 10px}
+.acc-h.bad{color:var(--amber)}
+.acc-item{border:1px solid var(--line);border-radius:12px;background:#0b0916;overflow:hidden}
+.acc-item+.acc-item{margin-top:10px}
+.acc-q{padding:15px 16px;font-size:14px;cursor:pointer;display:flex;justify-content:space-between;gap:12px;align-items:center}
+.acc-q i{font-family:var(--mono);font-size:15px;color:var(--pink);transition:transform .4s var(--eo);font-style:normal}
+.acc-item.open .acc-q i{transform:rotate(45deg)}
+.acc-a{font-size:13px;color:var(--dim);line-height:1.75}
+.acc-a>div{padding:0 16px 16px}
+.acc-modern .acc-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .48s var(--eo)}
+.acc-modern .acc-body>div{overflow:hidden;min-height:0}
+.acc-modern .acc-item.open .acc-body{grid-template-rows:1fr}
+.acc-legacy .acc-a{max-height:0;overflow:hidden;transition:max-height .48s var(--eo)}
+.acc-legacy .acc-item.open .acc-a{max-height:96px}
+
+/* 27 spring vs easing */
+.sv-row{display:grid;grid-template-columns:150px 1fr;gap:16px;align-items:center;margin-bottom:20px}
+@media(max-width:620px){.sv-row{grid-template-columns:1fr}}
+.sv-track{position:relative;height:34px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid var(--line)}
+.sv-knob{position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;will-change:transform}
+#svEase .sv-knob{background:var(--dim)}
+#svSpring .sv-knob{background:linear-gradient(140deg,var(--pink),var(--purple));box-shadow:0 0 18px rgba(255,47,208,.6)}
+.sv-name{font-family:var(--mono);font-size:11.5px;color:var(--dim);line-height:1.7}
+.sv-name b{display:block;color:var(--ink);font-size:12.5px}
+.sv-ctl{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:6px}
+@media(max-width:700px){.sv-ctl{grid-template-columns:1fr}}
+.sv-ctl label{font-family:var(--mono);font-size:10.5px;color:var(--dim);letter-spacing:.1em;display:block}
+.sv-ctl input[type=range]{width:100%;margin-top:8px;accent-color:#ff2fd0}
+.sv-read{font-family:var(--mono);font-size:11px;color:var(--cyan);margin-top:14px}
+
+/* 28 word highlight */
+.wh-stage{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 22px}
+.wh-p{max-width:660px;font-size:clamp(19px,3.4vw,32px);line-height:1.6;font-weight:700;letter-spacing:-.01em;margin:0}
+.wh-p .w{color:rgba(239,234,255,.16);transition:color .28s linear}
+.wh-p .w.on{color:#efeaff}
+.wh-p .w.hot{color:var(--pink)}
+.wh-bar{width:min(660px,80vw);height:2px;background:rgba(255,255,255,.1);margin-top:34px;overflow:hidden}
+.wh-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--pink),var(--cyan));transform-origin:0 50%;transform:scaleX(0)}
+.wh-hint{font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;color:var(--dim);margin-top:16px}
+
+/* 29 grain / glitch */
+.poster{position:relative;height:min(48vh,320px);border-radius:12px;overflow:hidden;background:
+  radial-gradient(70% 80% at 25% 25%,#ff2fd033,transparent 60%),
+  radial-gradient(70% 70% at 80% 70%,#7b3dff44,transparent 60%),#0a0814;
+  display:grid;place-items:center}
+.grain{position:absolute;inset:-60%;pointer-events:none;opacity:.4;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation:grainmove .6s steps(4) infinite}
+@keyframes grainmove{0%{transform:translate(0,0)}25%{transform:translate(-4%,3%)}50%{transform:translate(3%,-3%)}75%{transform:translate(-2%,-2%)}100%{transform:translate(0,0)}}
+.scan{position:absolute;inset:0;pointer-events:none;opacity:.35;
+  background:repeating-linear-gradient(180deg,rgba(255,255,255,.055) 0 1px,transparent 1px 3px)}
+.vig{position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 160px 40px rgba(0,0,0,.85)}
+.glitch{position:relative;font-family:var(--mono);font-weight:700;font-size:clamp(24px,6vw,62px);letter-spacing:.02em;z-index:2;
+  text-shadow:0 0 18px rgba(255,47,208,.5)}
+.glitch::before,.glitch::after{content:attr(data-t);position:absolute;left:0;top:0;width:100%}
+.glitch::before{color:var(--cyan);animation:g1 2.6s steps(2,end) infinite}
+.glitch::after{color:var(--pink);animation:g2 3.1s steps(2,end) infinite}
+@keyframes g1{0%,86%,100%{clip-path:inset(0 0 100% 0);transform:none}88%{clip-path:inset(12% 0 62% 0);transform:translateX(-6px)}94%{clip-path:inset(58% 0 20% 0);transform:translateX(5px)}}
+@keyframes g2{0%,80%,100%{clip-path:inset(100% 0 0 0);transform:none}84%{clip-path:inset(30% 0 44% 0);transform:translateX(7px)}92%{clip-path:inset(70% 0 8% 0);transform:translateX(-5px)}}
+.post-tag{position:absolute;left:14px;top:12px;font-family:var(--mono);font-size:10px;letter-spacing:.22em;color:#ffffff88;z-index:3}
+
+/* 30 tunnel zoom */
+.tun-stage{position:sticky;top:0;height:100vh;overflow:hidden;display:grid;place-items:center;background:radial-gradient(60% 60% at 50% 50%,#120a24,#06050b 75%)}
+.tun{position:absolute;inset:0;perspective:700px}
+.tun-plane{position:absolute;left:50%;top:50%;width:min(58vw,470px);height:min(40vh,270px);margin:calc(min(40vh,270px)/-2) 0 0 calc(min(58vw,470px)/-2);
+  border:1px solid rgba(255,47,208,.45);border-radius:10px;will-change:transform,opacity;
+  background:linear-gradient(180deg,rgba(255,47,208,.05),rgba(123,61,255,.05))}
+.tun-plane::after{content:"";position:absolute;inset:8px;border:1px solid rgba(75,225,255,.22);border-radius:6px}
+.tun-plane b{position:absolute;left:10px;top:8px;font-family:var(--mono);font-size:11px;font-weight:400;color:var(--cyan);letter-spacing:.18em}
+.tun-core{position:relative;z-index:3;text-align:center}
+.tun-core h3{margin:0;font-size:clamp(18px,3.6vw,34px);letter-spacing:-.01em;font-weight:800}
+.tun-core p{margin:10px 0 0;font-family:var(--mono);font-size:11px;letter-spacing:.24em;color:var(--pink)}
+.tun-hud{position:absolute;bottom:60px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--dim)}
+footer{margin-top:90px;padding-top:26px;border-top:1px solid var(--line);font-family:var(--mono);font-size:11px;color:#6f689b;line-height:2}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .brand i,.grain,.glitch::before,.glitch::after,.vrow.a,.vrow.b{animation:none}
+}
+</style>
+</head>
+<body>
+<div id="bar"><div id="barFill"></div></div>
+<header class="top">
+  <div class="top-in">
+    <div class="brand"><i></i>MOTION<span class="dim">LAB · VOL.2</span></div>
+    <nav class="toc">
+      <a href="#l15">preloader</a><a href="#l16">cursor</a><a href="#l17">velocity-skew</a>
+      <a href="#l18">card-stack</a><a href="#l19">coverflow</a><a href="#l20">svg-draw</a>
+      <a href="#l21">gooey</a><a href="#l22">view-transition</a><a href="#l23">drag-inertia</a>
+      <a href="#l24">text-mask</a><a href="#l25">char-roll</a><a href="#l26">accordion</a>
+      <a href="#l27">spring</a><a href="#l28">word-highlight</a><a href="#l29">grain-glitch</a>
+      <a href="#l30">tunnel</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap" style="padding-bottom:0">
+    <p class="kicker">FRONTEND MOTION · VOL.2 · 16 PATTERNS</p>
+    <h1>再来 16 个：<em>转场、物理、滤镜</em><br>和那些真正让人"哇"的东西</h1>
+    <p class="lead">Vol.1 是滚动叙事的骨架，这一份是质感层：载入、光标、物理惯性、共享元素转场、SVG 描边、gooey 滤镜、3D 隧道。每个模式都带"复制参数"按钮。</p>
+  </div>
+</section>
+
+<div class="wrap">
+
+  <section class="lab" id="l15">
+    <div class="lab-head">
+      <span class="num">15</span>
+      <h2>preloader + curtain wipe<span class="cn">载入动画 + 幕布揭开</span></h2>
+      <button class="rp" id="preBtn">↻ 重播</button>
+      <button class="cp">复制参数</button>
+      <p class="meta"><b>阶段一</b> 0→100 计数 + 进度条 scaleX（rAF 驱动）&nbsp;·&nbsp;
+        <b>阶段二</b> 4 块幕布 <b>scaleY 1→0</b>，transform-origin:top，stagger 80ms &nbsp;·&nbsp;
+        <b>阶段三</b> 内容 opacity 0→1 延迟 350ms（等幕布走一半）</p>
+      <p class="snip">.panels i{transform-origin:top;transition:transform .9s var(--eo)} i:nth-child(2){transition-delay:.08s}</p>
+    </div>
+    <div class="stage flat">
+      <div class="pre" id="pre">
+        <div class="pre-behind"><h3>POOLS OPEN</h3><p>PRELOADER DONE · 4 PANELS · STAGGER 80ms</p></div>
+        <div class="pre-panels"><i></i><i></i><i></i><i></i></div>
+        <div class="pre-num"><b id="preNum">0</b><div class="pre-track"><i id="preBar"></i></div><span>LOADING · 9 ASSETS</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="lab" id="l16">
+    <div class="lab-head">
+      <span class="num">16</span>
+      <h2>custom cursor / cursor follower<span class="cn">自定义光标 + 阻尼跟随</span></h2>
+      <button class="cp">复制参数</button>
+      <p class="meta"><b>内点</b> 直接赋值（1:1 无延迟）&nbsp;·&nbsp; <b>外环</b> 用 <b>damp()</b> 指数阻尼跟随，s=7 → 有拖尾但不飘 &nbsp;·&nbsp;
+        hover 到 <code>data-cursor</code> 目标时环放大到 92px 并显示标签 &nbsp;·&nbsp; 只在 pointer:fine 启用（触屏没有 hover，做这套没意义）</p>
+      <p class="snip">ring.x = damp(ring.x, mouse.x, 7, dt)   // 1 - e^(-7·dt) 帧率无关 · stage{cursor:none}</p>
+    </div>
+    <div class="stage">
+      <div class="cur-stage" id="curStage">
+        <div class="cur-t" data-cursor="VIEW">HOVER · VIEW</div>
+        <div class="cur-t" data-cursor="DRAG">HOVER · DRAG</div>
+        <div class="cur-t" data-cursor="OPEN">HOVER · OPEN</div>
+        <div id="curRing"><span id="curLabel">VIEW</span></div>
+        <div id="curDot"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="lab" id="l17">
+    <div class="lab-head">
+      <span class="num">17</span>
+      <h2>scroll velocity skew<span class="cn">滚动速度倾斜（Awwwards 味）</span></h2>
+      <button class="cp">复制参数</button>
+      <p class="meta"><b>速度</b> v = (scrollY − lastY) / dt，再 damp 到 skew 值 &nbsp;·&nbsp;
+        <b>映射</b> skewY(clamp(v×0.06, ±6deg)) + 轨道额外横移 v×0.18px（拉丝感）&nbsp;·&nbsp;
+        两排跑马灯方向相反，斜的时候层次最明显 &nbsp;·&nbsp; 停下 400ms 内自动回正</p>
+      <p class="snip">skewY(clamp(v*0.06, -6, 6)deg) · 只有滚动中才有值，停止归零 → 这就是"惯性感"</p>
+    </div>
+    <div class="bleed" id="vskWrap" style="height:170vh">
+      <div class="pin-stage">
+        <div class="vsk-meter" id="vskMeter">VELOCITY 0 px/s</div>
+        <div class="vsk" id="vsk"><div class="vrow a" id="vrowA"></div><div class="vrow b" id="vrowB"></div></div>
+        <div class="vsk-hint">↓ 使劲滚一下，看它歪</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="lab" id="l18">
+    <div class="lab-head">
+      <span class="num">18</span>
+      <h2>sticky card stack<span class="cn">卡堆叠</span></h2>
+      <button class="cp">复制参数</button>
+      <p class="meta"><b>做法</b> sticky 容器里绝对定位 N 张卡，滚动进度 t = p×(N−1) &nbsp;·&nbsp;
+        第 i 张在 t∈[i−1, i] 从 translateY(100%) 升到 0（配 ±6deg rotate 做"手上甩牌"）&nbsp;·&nbsp;
+        被盖住的前卡 scale 1→0.95 + 亮度衰减，制造纵深</p>
+      <p class="snip">local = clamp(t-(i-1)) · y = (1-local)*100% · 前卡 scale = 1-(t-i)*0.05</p>
+    </div>
+    <div class="bleed" id="stackWrap">
+      <div class="stack-stage">
+        <span class="stack-tag">STICKY STACK · 4 CARDS</span>
+        <div id="stackHost" style="position:absolute;inset:0;display:grid;place-items:center"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="lab" id="l19">
+    <div class="lab-head">
+      <span class="num">19</span>
+      <h2>3D coverflow<span class="cn">3D 封面流</span></h2>
+      <button class="cp">复制参数</button>
+      <p class="meta"><b>结构</b> 父级 <b>perspective:1100px</b> + <b>transform-style:preserve-3d</b> &nbsp;·&nbsp;
+        <b>映射</b> d = i − t → rotateY(clamp(d,±3)×−32deg)、translateZ(−|d|×150px)、opacity 1−|d|×0.24 &nbsp;·&nbsp;
+        越远的卡旋转越接近 90°，形成环形</p>
+      <p class="snip">rotateY(clamp(d,-3,3)*-32deg) translateZ(calc(-1px*abs(d)*150)) · perspective:1100px</p>
+    </div>
+    <div class="bleed" id="cfWrap" style="height:190vh">
+      <div class="cf-stage">
+        <div class="cf-inner" id="cfInner"></div>
+        <div class="cf-dots" id="cfDots"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="lab" id="l20">
+    <div class="lab-head">
+      <span class="num">20</span>
+      <h2>SVG line draw<span class="cn">SVG 描边绘制 + 进度环</span></h2>
+      <button class="rp" id="drawBtn">↻ 重播</button>
+      <button class="cp">复制参数</button>
+      <p class="meta"><b>原理</b> 把路径总长当 dasharray，dashoffset 从 L → 0 &nbsp;·&nbsp;
+        长度用 <code>path.getTotalLength()</code> 现取，别硬编码 &nbsp;·&nbsp; <b>时间</b> 1800ms easeOutQuint &nbsp;·&nbsp;
+        右侧环 = 本节滚动进度，原生 <b>stroke-dashoffset</b> 比 conic-gradient 更精确可控</p>
+      <p class="snip">L = path.getTotalLength(); d = L; transition: stroke-dashoffset 1.8s var(--eo); d → 0</p>
+    </div>
+    <div class="stage">
+      <div class="drawbox">
+        <svg id="drawSvg" viewBox="0 0 440 130">
+          <defs>
+            <linearGradient id="dg" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#ff2fd0"/><stop offset=".5" stop-color="#7b3dff"/><stop offset="1" stop-color="#4be1ff"/>
+            </linearGradient>
+            <linearGradient id="rg" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#ff2fd0"/><stop offset="1" stop-color="#4be1ff"/>
+            </linearGradient>
+          </defs>
+          <path id="drawPath" d="M14 96 C 62 22, 104 118, 158 62 S 232 16, 268 74 S 348 122, 426 40" fill="none" stroke="url(#dg)" stroke-width="2.6" stroke-linecap="round"/>
+          <path d="M14 118 H 426" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="1"/>
+        </svg>
+        <svg class="ring" viewBox="0 0 128 128">
+          <circle class="bgc" cx="64" cy="64" r="52"/>
+          <circle id="ringFg" cx="64" cy="64" r="52" stroke-dasharray="326.7" stroke-dashoffset="326.7"/>
+          <text class="ring-txt" x="64" y="60" id="ringTxt">0%</text>
+          <text class="ring-sub" x="64" y="82">SECTION SCROLL</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <section class="lab" id="l21">
+    <div class="lab-head">
+      <span class="num">21</span>
+      <h2>gooey / liquid morph<span class="cn">胶状融合</span></h2>
+      <button class="rp" id="gooBtn">↻ 开合</button>
+      <button class="cp">复制参数</button>
+      <p class="meta"><b>原理</b> 不是 CSS，是 SVG 滤镜三件套：<b>feGaussianBlur stdDeviation=9</b> 糊掉 →
+        <b>feColorMatrix 对比度 19/−9</b> 把 alpha 二值化 → 糊掉的边缘被"拉"出液桥 &nbsp;·&nbsp;
+        子元素只是普通 translate，融合由滤镜自动算 &nbsp;·&nbsp; 逐个 delay 70ms 制造拉伸</p>
+      <p class="snip">filter: url(#gooFilter) · feGaussianBlur stdDeviation="9" → feColorMatrix "0 0 0 19 -9"</p>
+    </div>
+    <div class="stage">
+      <div class="goo-stage">
+        <div class="goo" id="goo">
+          <div class="dot">01</div><div class="dot">02</div><div class="dot">03</div>
+          <div class="blob" id="gooBlob">MENU</div>
+          <div class="goo-label">CLICK THE BLOB</div>
+        </div>
+      </div>
+      <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+        <filter id="gooFilter" x="-40%" y="-40%" width="180%" height="180%">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="9" result="b"/>
+          <feColorMatrix in="b" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -9"/>
+        </filter>
+      </svg>
+    </div>
+  </section>
+
+  <section class="lab" id="l22">
+    <div class="lab-head">
+      <span class="num">22</span>
+      <h2>View Transitions API<span class="cn">共享元素转场</span></h2>
+      <span class="badge" id="vtBadge">检测中…</span>
+      <button class="cp">复制参数</button>
+      <p class="meta"><b>核心</b> 给来源和目标元素同一个 <b>view-transition-name</b>（必须唯一），
+        在 <code>document.startViewTransition(() =&gt; { 改 DOM })</code> 的回调里挪名字，浏览器自动补间 &nbsp;·&nbsp;
+        不用手算 FLIP &nbsp;·&nbsp; 不支持时本页自动降级为 WAAPI 手写 FLIP</p>
+      <p class="snip">document.startViewTransition(() =&gt; { from.style.viewTransitionName=''; to.style.viewTransitionName='hero'; … })</p>
+    </div>
+    <div class="stage">
+      <div class="vt-grid" id="vtGrid">
+        <div class="vt-item" data-hue="255 47 208" data-body="连钱包、充 USDG，没有托管也没有 KYC 表格。">
+          <div class="vt-thumb" style="background:radial-gradient(80% 80% at 30% 25%,#ff2fd055,transparent 62%),#0b0916"></div>
+          <span class="vt-title">CONNECT</span>
+        </div>
+        <div class="vt-item" data-hue="123 61 255" data-body="选标的和到期时间，写下你的精确数字。">
+          <div class="vt-thumb" style="background:radial-gradient(80% 80% at 30% 25%,#7b3dff55,transparent 62%),#0b0916"></div>
+          <span class="vt-title">POST</span>
+        </div>
+        <div class="vt-item" data-hue="75 225 255" data-body="到期时按误差排名，越接近分到的越多。">
+          <div class="vt-thumb" style="background:radial-gradient(80% 80% at 30% 25%,#4be1ff55,transparent 62%),#0b0916"></div>
+          <span class="vt-title">SCORE</span>
+        </div>
+        <div class="vt-item" data-hue="182 255 61" data-body="池子按分数结算，链上留痕，历史可查。">
+          <div class="vt-thumb" style="background:radial-gradient(80% 80% at 30% 25%,#b6ff3d55,transparent 62%),#0b0916"></div>
+          <span class="vt-title">SETTLE</span>
+        </div>
+      </div>
+    </div>
+    <div class="vt-detail" id="vtDetail">
+      <div class="vt-d-panel">
+        <button class="vt-close" id="vtClose">✕ 关闭</button>
+        <div class="vt-d-hero"></div>
+        <div class="vt-d-body"><span class="vt-d-title"></span><p></p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="lab" id="l23">
+    <div class="lab-head">
+      <span class="num">23</span>
+      <h2>drag + inertia (throw)<span class="cn">拖拽惯性 / 甩动</span></h2>
+      <button class="cp">复制参数</button>
+      <p class="meta"><b>做法</b> pointerdown/move 时严格跟手（1:1，不给阻尼）&nbsp;·&nbsp;
+        松手后 <b>v 每帧 × 0.94</b>（≈ friction 0.055/s）衰减，|v| &lt; 40px/s 时改为 <b>tween 吸附</b>到最近的卡（400ms easeOutQuint）&nbsp;·&nbsp;
+        越界橡皮筋系数 0.35</p>
+      <p class="snip">v = (x-lastX)/dt → 每帧 x += v*dt; v *= 0.94 → |v|&lt;40 时吸附 round(-x/step)*step</p>
+    </div>
+    <div class="stage flat">
+      <div class="drag-view" id="dragView">
+        <div class="drag-track" id="dragTrack"></div>
+        <div class="drag-hud" id="dragHud">v 0 px/s</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="lab" id="l24">
+    <div class="lab-head">
+      <span class="num">24</span>
+      <h2>text mask media<span class="cn">文字内嵌媒体</span></h2>
+      <button class="rp" id="tmBtn">↻ 重播</button>
+      <button class="cp">复制参数</button>
+      <p class="meta"><b>做法</b> 底层放媒体（这里是 canvas 动画，换成 <code>&lt;video muted loop playsinline&gt;</code> 完全一样），
+        上面盖一层黑底白字并给 <b>mix-blend-mode: multiply</b> → multiply(黑, 媒体) = 全黑，只有白字位置保留媒体 &nbsp;·&nbsp;
+        不用 SVG mask、不用 background-clip，兼容性更好</p>
+      <p class="snip">.mask{inset:0;background:#000;mix-blend-mode:multiply} .mask h3{color:#fff} → 只有白字处透出媒体</p>
+    </div>
+    <div class="stage flat">
+      <div class="tm" id="tm">
+        <canvas id="tmCanvas"></canvas>
+        <div class="tm-mask"><h3>PRECISION<br>MARKETS</h3></div>
+        <span class="tm-note">MULTIPLY + WHITE TEXT · 可换 &lt;video&gt;</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="lab" id="l25">
+    <div class="lab-head">
+      <span class="num">25</span>
+      <h2>char roll-up on hover<span class="cn">逐字滚入</span></h2>
+      <button class="cp">复制参数</button>
+      <p class="meta"><b>结构</b> 每个字一个 <b>overflow:hidden</b> 盒子，里面叠两份字（一份在上，一份 translateY(104%)）&nbsp;·&nbsp;
+        hover 时上下互换，<b>transition-delay: i×26ms</b> &nbsp;·&nbsp;
+        盒子高度锁死，所以不会有任何布局抖动 —— 这是它比"逐字 fade"高级的原因</p>
+      <p class="snip">.rc{overflow:hidden;height:1.08em} .b2{translateY(104%)} :hover .b1{translateY(-104%)} :hover .b2{translateY(0)}</p>
+    </div>
+    <div class="stage">
+      <p class="roll-line" id="rollLine">HOVER THE NUMBER</p>
+      <p class="roll-hint">↑ 把指针移上去</p>
+    </div>
+  </section>
+
+  <section class="lab" id="l26">
+    <div class="lab-head">
+      <span class="num">26</span>
+      <h2>accordion: 0fr → 1fr<span class="cn">现代平滑展开（对比老写法）</span></h2>
+      <button class="rp" id="accBtn">↻ 两边一起开合</button>
+      <button class="cp">复制参数</button>
+      <p class="meta">左边是现在的写法：<b>display:grid + grid-template-rows 0fr→1fr</b>，高度自动算，不用猜数值。
+        右边是老写法 <b>max-height</b>：值给小了会<b>先加速再突然停住</b>（因为动画其实在动一个和内容无关的属性），给大了则有延迟感。点按钮同时开，直接看差别</p>
+      <p class="snip">.body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .48s var(--eo)}
+.body&gt;div{overflow:hidden;min-height:0} · .open .body{grid-template-rows:1fr}</p>
+    </div>
+    <div class="stage">
+      <div class="acc-cols">
+        <div class="acc-modern" id="accModern">
+          <p class="acc-h">grid-template-rows 0fr → 1fr ✓ 高度自动</p>
+          <div class="acc-item"><div class="acc-q">怎么结算？<i>＋</i></div>
+            <div class="acc-body"><div class="acc-a"><div>到期时把结果与所有提交数字比对，按绝对误差升序排名，名次决定份额。</div></div></div></div>
+          <div class="acc-item"><div class="acc-q">用的是什么币？<i>＋</i></div>
+            <div class="acc-body"><div class="acc-a"><div>入场与结算都是 USDG，池子本身不承担汇率波动。</div></div></div></div>
+        </div>
+        <div class="acc-legacy" id="accLegacy">
+          <p class="acc-h bad">max-height: 0 → 96px ✗ 猜的值</p>
+          <div class="acc-item"><div class="acc-q">怎么结算？<i>＋</i></div>
+            <div class="acc-a"><div>到期时把结果与所有提交数字比对，按绝对误差升序排名，名次决定份额。</div></div></div>
+          <div class="acc-item"><div class="acc-q">用的是什么币？<i>＋</i></div>
+            <div class="acc-a"><div>入场与结算都是 USDG，池子本身不承担汇率波动。</div></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="lab" id="l27">
+    <div class="lab-head">
+      <span class="num">27</span>
+      <h2>spring physics vs easing<span class="cn">弹簧物理 vs 贝塞尔曲线</span></h2>
+      <button class="rp" id="svBtn">↻ 同时跑一次</button>
+      <button class="cp">复制参数</button>
+      <p class="meta"><b>上</b> cubic-bezier(.22,1,.36,1)：300ms 到就停，永远不可能过冲 &nbsp;·&nbsp;
+        <b>下</b> 半隐式欧拉：<code>v += (−k·x − c·v)·dt; x += v·dt</code>，k=stiffness、c=damping &nbsp;·&nbsp;
+        调大 stiffness 更"硬"，减小 damping 会过冲。读数是本次运行的最大过冲</p>
+      <p class="snip">v += (-k*(x-target) - c*v) * dt;  x += v*dt   // dt 用真实的，别写死 1/60</p>
+    </div>
+    <div class="stage">
+      <div class="sv-row">
+        <span class="sv-name"><b>cubic-bezier</b>300ms easeOutQuint</span>
+        <div class="sv-track" id="svEase"><div class="sv-knob"></div></div>
+      </div>
+      <div class="sv-row">
+        <span class="sv-name"><b>spring</b>stiffness × damping</span>
+        <div class="sv-track" id="svSpring"><div class="sv-knob"></div></div>
+      </div>
+      <div class="sv-ctl">
+        <label>STIFFNESS <input type="range" id="svK" min="40" max="420" value="180" step="10"><span id="svKv">180</span></label>
+        <label>DAMPING <input type="range" id="svC" min="6" max="50" value="26" step="1"><span id="svCv">26</span></label>
+        <label>MASS <input type="range" id="svM" min="0.5" max="3" value="1" step="0.1"><span id="svMv">1.0</span></label>
+      </div>
+      <p class="sv-read" id="svRead">过冲 0.0% · 稳态误差 0.00px</p>
+    </div>
+  </section>
+
+  <section class="lab" id="l28">
+    <div class="lab-head">
+      <span class="num">28</span>
+      <h2>word-by-word highlight<span class="cn">逐词点亮（阅读进度）</span></h2>
+      <button class="cp">复制参数</button>
+      <p class="meta">把段落按空格拆成 <b>.w</b>，滚动进度 × 词数 = 当前词索引 &nbsp;·&nbsp;
+        已读 <b>全亮</b>、当前词 <b>粉色</b>、未读 16% 透明 &nbsp;·&nbsp;
+        要点：sticky 钉住，让滚动距离只推动"阅读"，页面本身不位移</p>
+      <p class="snip">i = Math.floor(p * words.length); words.slice(0,i) → .on ; words[i] → .hot</p>
+    </div>
+    <div class="bleed" id="whWrap" style="height:200vh">
+      <div class="wh-stage">
+        <p class="wh-p" id="whP"></p>
+        <div class="wh-bar"><i id="whBar"></i></div>
+        <p class="wh-hint">SCROLL · 逐词点亮</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="lab" id="l29">
+    <div class="lab-head">
+      <span class="num">29</span>
+      <h2>grain + scanlines + glitch<span class="cn">颗粒 · 扫描线 · 故障字</span></h2>
+      <button class="cp">复制参数</button>
+      <p class="meta"><b>颗粒</b> SVG feTurbulence 当 background-image，用 <b>steps(4)</b> 逐帧跳 —— 关键是 steps 不是 smooth，跳才像胶片 &nbsp;·&nbsp;
+        <b>扫描线</b> repeating-linear-gradient 1px/3px &nbsp;·&nbsp;
+        <b>故障字</b> ::before/::after 复制文字，<b>clip-path 分条</b> + 左右位移 + 青/品红通道错位，周期放在 80%–95%（一直抖会很烦）</p>
+      <p class="snip">feTurbulence baseFrequency=0.85 · animation .6s steps(4) infinite ::before{clip-path:inset(12% 0 62% 0)}</p>
+    </div>
+    <div class="stage flat">
+      <div class="poster">
+        <div class="grain"></div><div class="scan"></div><div class="vig"></div>
+        <span class="post-tag">GRAIN · SCAN · GLITCH</span>
+        <h3 class="glitch" data-t="PICK THE NUMBER">PICK THE NUMBER</h3>
+      </div>
+    </div>
+  </section>
+
+  <section class="lab" id="l30">
+    <div class="lab-head">
+      <span class="num">30</span>
+      <h2>3D tunnel zoom<span class="cn">3D 隧道穿越</span></h2>
+      <button class="cp">复制参数</button>
+      <p class="meta"><b>结构</b> <b>perspective:700px</b> + N 个平面，每个只在 <b>translateZ</b> 上动 —— 缩放由透视自动算，不用改 width &nbsp;·&nbsp;
+        <b>循环</b> z = (k×SPACING + p×DISTANCE) mod DISTANCE − DISTANCE &nbsp;·&nbsp;
+        越靠近平面的透明度越低（否则糊住镜头），中心文案保持清晰</p>
+      <p class="snip">perspective:700px · translateZ(z) z∈[-2400,0] · z = (k*320 + p*2600) % 2600 - 2600</p>
+    </div>
+    <div class="bleed" id="tunWrap" style="height:240vh">
+      <div class="tun-stage">
+        <div class="tun" id="tun"></div>
+        <div class="tun-core"><h3>Nobody is wrong.</h3><p>SOME ARE JUST FURTHER AWAY</p></div>
+        <div class="tun-hud" id="tunHud">DEPTH 0 · 8 PLANES</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div>◈ 纯 CSS + 原生 JS，零依赖 · 单文件 · 离线可跑 · 与 Vol.1 共用同一套工具函数</div>
+    <div>◈ 所有滚动/指针/物理都进同一个 ticker，重活只在需要时算</div>
+    <div>◈ prefers-reduced-motion 下：颗粒 / 故障 / 跑马灯 / 呼吸点全部停用</div>
+  </footer>
+</div>
+<script>
+/* ───────── 基础工具（与 Vol.1 同一套） ───────── */
+const $  = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const clamp = (v, a = 0, b = 1) => (v < a ? a : v > b ? b : v);
+const lerp  = (a, b, t) => a + (b - a) * t;
+const damp  = (cur, target, s, dt) => lerp(cur, target, 1 - Math.exp(-s * dt));
+const EASE = {
+  power2out: t => 1 - Math.pow(1 - t, 2),
+  power4out: t => 1 - Math.pow(1 - t, 4),
+  backOut:   t => 1 + 2.70158 * Math.pow(t - 1, 3) + 1.70158 * Math.pow(t - 1, 2),
+};
+const REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const FINE   = matchMedia('(pointer:fine)').matches;
+
+const tickers = new Set();
+let _last = performance.now();
+(function tick(now) {
+  const dt = Math.min(0.05, (now - _last) / 1000); _last = now;
+  for (const fn of tickers) { try { fn(dt, now); } catch (e) { /* 单个 demo 出错不影响其他 */ } }
+  requestAnimationFrame(tick);
+})(performance.now());
+
+/* 把一个 pin 容器的滚动进度交给回调：p ∈ [0,1] */
+function track(wrap, cb) {
+  let top = 0, span = 1;
+  const measure = () => {
+    top  = wrap.getBoundingClientRect().top + scrollY;
+    span = Math.max(1, wrap.offsetHeight - innerHeight);
+  };
+  measure();
+  addEventListener('resize', measure);
+  if (window.ResizeObserver) new ResizeObserver(measure).observe(wrap);
+  tickers.add(dt => cb(clamp((scrollY - top) / span), dt));
+}
+
+/* 全局滚动速度（px/s，已阻尼）——17 / 其他速度类效果共用 */
+const SCROLL = { last: scrollY, v: 0 };
+tickers.add(dt => {
+  const raw = Math.abs(scrollY - SCROLL.last) / Math.max(dt, 0.001);
+  SCROLL.last = scrollY;
+  SCROLL.v = damp(SCROLL.v, raw, 9, dt);
+});
+
+/* 阅读进度条 */
+(() => {
+  const fill = $('#barFill');
+  tickers.add(() => {
+    const max = document.documentElement.scrollHeight - innerHeight;
+    fill.style.transform = `scaleX(${max > 0 ? clamp(scrollY / max) : 0})`;
+  });
+})();
+
+/* “复制参数”：把术语 + 参数 + 代码片段打包，可直接贴进 prompt */
+$$('.cp').forEach(btn => btn.addEventListener('click', async () => {
+  const sec = btn.closest('.lab');
+  const text = [
+    sec.querySelector('h2').textContent.replace(/\s+/g, ' ').trim(),
+    sec.querySelector('.meta').textContent.replace(/\s+/g, ' ').trim(),
+    sec.querySelector('.snip').textContent.replace(/\s+/g, ' ').trim(),
+  ].join('\n');
+  try { await navigator.clipboard.writeText(text); btn.textContent = '✓ 已复制'; }
+  catch (e) { btn.textContent = '复制失败'; }
+  setTimeout(() => { btn.textContent = '复制参数'; }, 1400);
+}));
+
+/* ═════ 15 preloader + curtain wipe ═════ */
+(() => {
+  const pre = $('#pre'), num = $('#preNum'), bar = $('#preBar');
+  if (!pre) return;
+  let raf = 0;
+  const run = () => {
+    cancelAnimationFrame(raf);
+    pre.classList.remove('done');
+    num.textContent = '0'; bar.style.transform = 'scaleX(0)';
+    void pre.offsetWidth;                                   // 强制重排，清掉上一轮过渡
+    const dur = REDUCE ? 0 : 1500, t0 = performance.now();
+    (function f(now) {
+      const p = dur ? clamp((now - t0) / dur) : 1;
+      num.textContent = String(Math.round(EASE.power2out(p) * 100));
+      bar.style.transform = `scaleX(${p})`;
+      if (p < 1) raf = requestAnimationFrame(f);
+      else { num.textContent = '100'; setTimeout(() => pre.classList.add('done'), 180); }
+    })(performance.now());
+  };
+  run();
+  $('#preBtn').addEventListener('click', run);
+})();
+
+/* ═════ 16 custom cursor / 阻尼跟随 ═════ */
+(() => {
+  const stage = $('#curStage');
+  if (!stage || !FINE) return;
+  const dot = $('#curDot'), ring = $('#curRing'), labelEl = $('#curLabel');
+  const m = { x: 0, y: 0 }, r = { x: 0, y: 0 };
+  let inside = false, ready = false;
+  stage.addEventListener('pointerenter', () => { inside = true; dot.style.opacity = ring.style.opacity = 1; });
+  stage.addEventListener('pointerleave', () => { inside = false; dot.style.opacity = ring.style.opacity = 0; });
+  stage.addEventListener('pointermove', e => {
+    const b = stage.getBoundingClientRect();
+    m.x = e.clientX - b.left; m.y = e.clientY - b.top;
+    if (!ready) { r.x = m.x; r.y = m.y; ready = true; }      // 首次进入别从 (0,0) 飞过来
+  });
+  $$('[data-cursor]', stage).forEach(t => {
+    t.addEventListener('pointerenter', () => { ring.classList.add('big'); labelEl.textContent = t.dataset.cursor; });
+    t.addEventListener('pointerleave', () => ring.classList.remove('big'));
+  });
+  tickers.add(dt => {
+    if (!inside) return;
+    r.x = damp(r.x, m.x, 7, dt); r.y = damp(r.y, m.y, 7, dt);   // 环：指数阻尼
+    dot.style.transform  = `translate3d(${m.x}px,${m.y}px,0)`;  // 点：1:1
+    ring.style.transform = `translate3d(${r.x}px,${r.y}px,0)`;
+  });
+})();
+
+/* ═════ 17 scroll velocity skew ═════ */
+(() => {
+  const wrap = $('#vskWrap'), vsk = $('#vsk'), A = $('#vrowA'), B = $('#vrowB'), meter = $('#vskMeter');
+  if (!wrap) return;
+  const words = ['PRECISION', 'POOLS', 'NOBODY IS WRONG', 'USDG', 'SCORE', 'SETTLE', 'DELTA', 'TREND'];
+  const row = suffix => words.map(w => `<span>${w}${suffix}</span>`).join('');
+  A.innerHTML = row('') + row('');      // 复制两份 → translateX(-50%) 无缝
+  B.innerHTML = row(' ·') + row(' ·');
+  let sx = 0, shift = 0;
+  tickers.add(dt => {
+    const b = wrap.getBoundingClientRect();
+    const onScreen = b.top < innerHeight && b.bottom > 0;
+    const raw = onScreen ? SCROLL.v : 0;
+    sx    = damp(sx,    clamp(raw * 0.06, -6, 6),       8, dt);
+    shift = damp(shift, clamp(raw * 0.18, -140, 140),   6, dt);
+    vsk.style.transform = `translate3d(${(-shift).toFixed(2)}px,0,0) skewY(${sx.toFixed(3)}deg)`;
+    meter.textContent = `VELOCITY ${raw.toFixed(0)} px/s · SKEW ${sx.toFixed(2)}°`;
+  });
+})();
+
+/* ═════ 18 sticky card stack ═════ */
+(() => {
+  const wrap = $('#stackWrap'), host = $('#stackHost');
+  if (!wrap || !host) return;
+  const data = [
+    ['CONNECT', '连钱包、充 USDG。没有托管，没有 KYC 表格，签名即入场。', '255 47 208'],
+    ['POST', '选标的和到期时间，写下你的精确数字。每人每池只能提交一次。', '123 61 255'],
+    ['SCORE', '到期按绝对误差升序排名，越接近分到的份额越多。', '75 225 255'],
+    ['SETTLE', '池子按分数结算，链上留痕，任何人都能复核每一笔。', '182 255 61'],
+  ];
+  host.innerHTML = data.map(([t, p, c], i) => `
+    <article class="stack-card" style="z-index:${i + 1}">
+      <div class="art" style="background:radial-gradient(80% 90% at 25% 20%,rgb(${c} / .5),transparent 62%),linear-gradient(180deg,#150e28,#0b0916)">
+        <span class="k">${String(i + 1).padStart(2, '0')} / 04</span>
+      </div>
+      <div class="body"><h4>${t}</h4><p>${p}</p></div>
+    </article>`).join('');
+  const cards = $$('.stack-card', host);
+  const N = cards.length;
+  wrap.style.height = `${100 + (N - 1) * 62}vh`;             // 滚动距离 = (N-1) × 62vh
+  track(wrap, p => {
+    const t = p * (N - 1);
+    cards.forEach((c, i) => {
+      const local  = clamp(t - (i - 1));                      // 0→1：这张正在升上来
+      const behind = clamp(t - i);                            // 被盖住之后
+      const y   = (1 - local) * 100;
+      const rot = (1 - local) * 6 * (i % 2 ? 1 : -1);         // 左右交替甩入
+      c.style.transform = `translate3d(0,${y.toFixed(2)}%,0) rotate(${rot.toFixed(2)}deg) scale(${(1 - behind * 0.05).toFixed(3)})`;
+      c.style.filter    = `brightness(${Math.max(0.42, 1 - behind * 0.3).toFixed(3)})`;
+      c.style.opacity   = (i === 0 || local > 0) ? 1 : 0;
+    });
+  });
+})();
+
+/* ═════ 19 3D coverflow ═════ */
+(() => {
+  const wrap = $('#cfWrap'), inner = $('#cfInner'), dots = $('#cfDots');
+  if (!wrap || !inner) return;
+  const data = [
+    ['AAPL · SPACING', '255 47 208'], ['NVDA · VOLUME', '118 185 0'], ['TSLA · DELTA', '232 33 39'],
+    ['GOOGL · TREND', '66 133 244'], ['SPY · INDEX', '182 255 61'], ['GLD · HEDGE', '255 183 3'],
+  ];
+  inner.innerHTML = data.map(([t, c]) => `
+    <div class="cf-card">
+      <i style="background:radial-gradient(80% 80% at 30% 25%,rgb(${c} / .42),transparent 62%),#0b0916"></i>
+      <span class="cfl">${t}</span>
+    </div>`).join('');
+  dots.innerHTML = data.map(() => '<b></b>').join('');
+  const cards = $$('.cf-card', inner), ds = $$('b', dots);
+  const N = cards.length;
+  track(wrap, p => {
+    const t = p * (N - 1);
+    cards.forEach((c, i) => {
+      const d = i - t, ad = Math.abs(d);
+      c.style.transform = `translate3d(${(d * 44).toFixed(2)}px,0,${(-ad * 150).toFixed(1)}px) rotateY(${(clamp(d, -3, 3) * -32).toFixed(2)}deg)`;
+      c.style.opacity = Math.max(0, 1 - ad * 0.24).toFixed(3);
+      c.style.zIndex = String(100 - Math.round(ad * 10));
+    });
+    const act = Math.round(t);
+    ds.forEach((b, i) => b.classList.toggle('on', i === act));
+  });
+})();
+
+/* ═════ 20 SVG line draw + 进度环 ═════ */
+(() => {
+  const path = $('#drawPath'), ring = $('#ringFg'), txt = $('#ringTxt'), stage = $('#l20 .stage');
+  if (!path) return;
+  const L = path.getTotalLength();
+  path.style.strokeDasharray = L;
+  path.style.strokeDashoffset = L;
+  path.style.transition = 'stroke-dashoffset 1.8s cubic-bezier(.22,1,.36,1)';
+  const draw = () => {
+    path.style.strokeDashoffset = L;
+    requestAnimationFrame(() => requestAnimationFrame(() => { path.style.strokeDashoffset = 0; }));
+  };
+  draw();
+  $('#drawBtn').addEventListener('click', draw);
+  const C = 2 * Math.PI * 52;
+  tickers.add(() => {
+    const r = stage.getBoundingClientRect();
+    const p = clamp((innerHeight - r.top) / (innerHeight + r.height));  // 0=刚进入底部, 1=从顶部离开
+    ring.style.strokeDashoffset = (C * (1 - p)).toFixed(1);
+    txt.textContent = Math.round(p * 100) + '%';
+  });
+})();
+
+/* ═════ 21 gooey ═════ */
+(() => {
+  const goo = $('#goo');
+  if (!goo) return;
+  const toggle = () => goo.classList.toggle('open');
+  $('#gooBlob').addEventListener('click', toggle);
+  $('#gooBtn').addEventListener('click', toggle);
+})();
+
+/* ═════ 22 View Transitions API ═════ */
+(() => {
+  const grid = $('#vtGrid'), detail = $('#vtDetail'), badge = $('#vtBadge');
+  if (!grid) return;
+  const supported = typeof document.startViewTransition === 'function';
+  badge.textContent = supported ? '✓ 支持 View Transitions API' : '✕ 不支持 → 自动降级为手写 FLIP';
+  badge.className = 'badge ' + (supported ? 'ok' : 'no');
+  const dHero = $('.vt-d-hero', detail), dTitle = $('.vt-d-title', detail), dBody = $('.vt-d-body p', detail);
+  const dPanel = $('.vt-d-panel', detail);
+  let opened = null;
+
+  const fill = item => {
+    detail.style.setProperty('--hue', item.dataset.hue);
+    dTitle.textContent = $('.vt-title', item).textContent;
+    dBody.textContent = item.dataset.body;
+  };
+  const openPanel  = item => { fill(item); detail.classList.add('open'); };
+  const closePanel = () => detail.classList.remove('open');
+
+  const open = item => {
+    const thumb = $('.vt-thumb', item), title = $('.vt-title', item);
+    if (!supported) {                                    // 降级：手写 FLIP（同 Vol.1 第 14 号）
+      const first = item.getBoundingClientRect();
+      openPanel(item);
+      const last = dPanel.getBoundingClientRect();
+      dPanel.animate(
+        [{ transform: `translate3d(${first.left - last.left}px,${first.top - last.top}px,0) scale(${first.width / last.width},${first.height / last.height})`, transformOrigin: 'top left' },
+         { transform: 'none', transformOrigin: 'top left' }],
+        { duration: 420, easing: 'cubic-bezier(.22,1,.36,1)' });
+      opened = item; return;
+    }
+    /* 标准用法：唯一的 view-transition-name 从来源挪到目标，浏览器自动补间 */
+    thumb.style.viewTransitionName = 'vtHero';
+    title.style.viewTransitionName = 'vtTitle';
+    const tr = document.startViewTransition(() => {
+      thumb.style.viewTransitionName = '';
+      title.style.viewTransitionName = '';
+      openPanel(item);
+      dHero.style.viewTransitionName  = 'vtHero';
+      dTitle.style.viewTransitionName = 'vtTitle';
+    });
+    tr.finished.finally(() => {
+      dHero.style.viewTransitionName = '';
+      dTitle.style.viewTransitionName = '';
+    });
+    opened = item;
+  };
+
+  const close = () => {
+    if (!opened) return;
+    const item = opened; opened = null;
+    const thumb = $('.vt-thumb', item), title = $('.vt-title', item);
+    if (!supported) { closePanel(); return; }
+    dHero.style.viewTransitionName  = 'vtHero';
+    dTitle.style.viewTransitionName = 'vtTitle';
+    const tr = document.startViewTransition(() => {
+      dHero.style.viewTransitionName = '';
+      dTitle.style.viewTransitionName = '';
+      closePanel();
+      thumb.style.viewTransitionName = 'vtHero';
+      title.style.viewTransitionName = 'vtTitle';
+    });
+    tr.finished.finally(() => {
+      thumb.style.viewTransitionName = '';
+      title.style.viewTransitionName = '';
+    });
+  };
+
+  grid.addEventListener('click', e => { const i = e.target.closest('.vt-item'); if (i) open(i); });
+  $('#vtClose').addEventListener('click', close);
+  detail.addEventListener('click', e => { if (e.target === detail) close(); });
+})();
+
+/* ═════ 23 drag + inertia ═════ */
+(() => {
+  const view = $('#dragView'), trackEl = $('#dragTrack'), hud = $('#dragHud');
+  if (!view || !trackEl) return;
+  const items = ['AAPL', 'NVDA', 'TSLA', 'GOOGL', 'SPY', 'GLD', 'USDG', 'MSFT'];
+  trackEl.innerHTML = items.map((t, i) => `
+    <div class="drag-card" style="background:radial-gradient(80% 90% at 30% 25%,hsl(${i * 47 % 360} 90% 60% / .22),transparent 62%),#0b0916">
+      <b>${t}</b><small>POOL · #${String(i + 1).padStart(2, '0')}</small>
+    </div>`).join('');
+  const cards = $$('.drag-card', trackEl);
+
+  let x = 0, v = 0, dragging = false, px = 0, lastX = 0, lastT = 0;
+  let min = 0, max = 0, snapping = false, snapFrom = 0, snapTo = 0, snapT0 = 0;
+
+  const measure = () => { min = Math.min(0, view.clientWidth - trackEl.scrollWidth); max = 0; };
+  measure();
+  addEventListener('resize', measure);
+  if (window.ResizeObserver) new ResizeObserver(measure).observe(trackEl);
+
+  const step = () => cards.length > 1 ? (cards[1].offsetLeft - cards[0].offsetLeft) : 1;
+
+  view.addEventListener('pointerdown', e => {
+    dragging = true; snapping = false;
+    view.classList.add('dragging');
+    try { view.setPointerCapture(e.pointerId); } catch (err) {}
+    px = lastX = e.clientX; lastT = performance.now(); v = 0;
+  });
+  view.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    const nx0 = x + (e.clientX - px); px = e.clientX;
+    let nx = nx0;
+    if (nx > max) nx = max + (nx - max) * 0.35;        // 橡皮筋
+    if (nx < min) nx = min + (nx - min) * 0.35;
+    x = nx;
+    const now = performance.now();
+    if (now - lastT > 8) { v = (e.clientX - lastX) / ((now - lastT) / 1000); lastX = e.clientX; lastT = now; }
+  });
+  const release = () => { dragging = false; view.classList.remove('dragging'); };
+  view.addEventListener('pointerup', release);
+  view.addEventListener('pointercancel', release);
+
+  tickers.add(dt => {
+    const s = step();
+    if (!dragging) {
+      if (snapping) {                                   // 吸附：tween 到最近的卡
+        const p = clamp((performance.now() - snapT0) / 400);
+        x = lerp(snapFrom, snapTo, EASE.power4out(p));
+        if (p >= 1) snapping = false;
+      } else if (Math.abs(v) > 40) {                     // 惯性滑行
+        x += v * dt;
+        v *= Math.pow(0.94, dt * 60);
+        if (x > max) { x = max; v = 0; }
+        if (x < min) { x = min; v = 0; }
+      } else {
+        v = 0;
+        const target = clamp(Math.round(x / s) * s, min, max);
+        if (Math.abs(target - x) > 0.5) { snapping = true; snapFrom = x; snapTo = target; snapT0 = performance.now(); }
+        else x = target;
+      }
+    }
+    trackEl.style.transform = `translate3d(${x.toFixed(2)}px,0,0)`;
+    cards.forEach(c => {                                // 按中心距离做"卡位"缩放
+      const r = c.getBoundingClientRect();
+      const d = Math.abs((r.left + r.width / 2) - innerWidth / 2) / (innerWidth / 2 + r.width / 2);
+      const f = 1 - clamp(d);
+      c.style.transform = `scale(${(0.92 + 0.08 * f).toFixed(3)})`;
+      c.style.opacity   = (0.5 + 0.5 * f).toFixed(3);
+    });
+    hud.textContent = `v ${v.toFixed(0)} px/s · x ${x.toFixed(0)}px`;
+  });
+})();
+
+/* ═════ 24 text mask media（canvas 当"视频"，换 <video> 一模一样） ═════ */
+(() => {
+  const tm = $('#tm'), cv = $('#tmCanvas');
+  if (!tm || !cv) return;
+  const ctx = cv.getContext('2d');
+  const dpr = Math.min(2, devicePixelRatio || 1);
+  let W = 0, H = 0;
+  const resize = () => {
+    W = tm.clientWidth; H = tm.clientHeight;
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  };
+  resize();
+  if (window.ResizeObserver) new ResizeObserver(resize).observe(tm);
+  let visible = true;
+  if (window.IntersectionObserver)
+    new IntersectionObserver(es => { visible = es[0].isIntersecting; }, { threshold: 0 }).observe(tm);
+  let t = 0;
+  tickers.add(dt => {
+    if (!visible || REDUCE) return;
+    t += dt;
+    const g = ctx.createLinearGradient(0, 0, W, H);
+    g.addColorStop(0,   `hsl(${(t * 26) % 360} 90% 55%)`);
+    g.addColorStop(0.5, `hsl(${(t * 26 + 90) % 360} 90% 45%)`);
+    g.addColorStop(1,   `hsl(${(t * 26 + 200) % 360} 90% 30%)`);
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    ctx.globalCompositeOperation = 'screen';
+    for (let i = 0; i < 5; i++) {
+      const cx = W * (0.5 + 0.36 * Math.sin(t * (0.35 + i * 0.11) + i));
+      const cy = H * (0.5 + 0.32 * Math.cos(t * (0.28 + i * 0.13) + i * 2));
+      const R  = Math.max(W, H) * 0.3;
+      const rad = ctx.createRadialGradient(cx, cy, 0, cx, cy, R);
+      rad.addColorStop(0, 'rgba(255,255,255,.55)');
+      rad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = rad;
+      ctx.beginPath(); ctx.arc(cx, cy, R, 0, 7); ctx.fill();
+    }
+    ctx.globalCompositeOperation = 'source-over';
+  });
+  if (REDUCE) { ctx.fillStyle = '#3b1d6e'; ctx.fillRect(0, 0, W, H); }
+  tm.classList.add('in');
+  $('#tmBtn').addEventListener('click', () => { tm.classList.remove('in'); void tm.offsetWidth; tm.classList.add('in'); });
+})();
+
+/* ═════ 25 char roll-up ═════ */
+(() => {
+  const line = $('#rollLine');
+  if (!line) return;
+  const text = line.textContent.trim();
+  line.innerHTML = [...text].map((c, i) => {
+    if (c === ' ') return '<span class="rc" style="--i:' + i + '">&nbsp;</span>';
+    return `<span class="rc" style="--i:${i}"><b class="b1">${c}</b><b class="b2">${c}</b></span>`;
+  }).join('');
+})();
+
+/* ═════ 26 accordion ═════ */
+(() => {
+  const click = e => {
+    const q = e.target.closest('.acc-q');
+    if (!q) return;
+    q.closest('.acc-item').classList.toggle('open');
+  };
+  ['#accModern', '#accLegacy'].forEach(sel => {
+    const root = $(sel);
+    if (root) root.addEventListener('click', click);
+  });
+  $('#accBtn').addEventListener('click', () => {
+    ['#accModern', '#accLegacy'].forEach(sel => {
+      const root = $(sel);
+      if (!root) return;
+      const open = !root.querySelector('.acc-item').classList.contains('open');
+      $$('.acc-item', root).forEach(it => it.classList.toggle('open', open));
+    });
+  });
+})();
+
+/* ═════ 27 spring physics vs easing ═════ */
+(() => {
+  const easeTrack = $('#svEase'), springTrack = $('#svSpring'), read = $('#svRead');
+  if (!easeTrack || !springTrack) return;
+  const easeKnob = $('.sv-knob', easeTrack), spKnob = $('.sv-knob', springTrack);
+  const K = $('#svK'), C = $('#svC'), M = $('#svM');
+  const Kv = $('#svKv'), Cv = $('#svCv'), Mv = $('#svMv');
+
+  const dist = () => Math.max(10, easeTrack.clientWidth - 32);
+  let easeActive = false, easeT0 = 0, springActive = false;
+  let spX = 0, spV = 0, overMax = 0;
+  const target = () => dist();
+
+  const run = () => {
+    easeActive = REDUCE ? false : true; easeT0 = performance.now();
+    spX = 0; spV = 0; overMax = 0;
+    springActive = !REDUCE;
+    if (REDUCE) { easeKnob.style.transform = `translate3d(${0}px,0,0)`; spKnob.style.transform = `translate3d(0,0,0)`; }
+  };
+
+  tickers.add(dt => {
+    const D = target();
+    if (easeActive) {
+      const p = clamp((performance.now() - easeT0) / 300);
+      easeKnob.style.transform = `translate3d(${(EASE.power4out(p) * D).toFixed(2)}px,0,0)`;
+      if (p >= 1) easeActive = false;
+    }
+    if (springActive) {
+      const k = +K.value, c = +C.value, m = +M.value;
+      const a = (-k * (spX - D) - c * spV) / m;          // 半隐式欧拉
+      spV += a * dt;
+      spX += spV * dt;
+      overMax = Math.max(overMax, spX - D);
+      spKnob.style.transform = `translate3d(${spX.toFixed(2)}px,0,0)`;
+      const settled = Math.abs(spX - D) < 0.5 && Math.abs(spV) < 6;
+      read.textContent = `过冲 ${(overMax / D * 100).toFixed(1)}% · 稳态误差 ${Math.abs(spX - D).toFixed(2)}px · v ${spV.toFixed(0)} px/s`;
+      if (settled) { springActive = false; spX = D; spKnob.style.transform = `translate3d(${D}px,0,0)`; }
+    }
+  });
+
+  const onCtl = () => { Kv.textContent = K.value; Cv.textContent = C.value; Mv.textContent = +M.value; };
+  [K, C, M].forEach(el => el.addEventListener('input', () => { onCtl(); run(); }));
+  onCtl();
+  $('#svBtn').addEventListener('click', run);
+  setTimeout(run, 400);
+  addEventListener('resize', run);
+})();
+
+/* ═════ 28 word-by-word highlight ═════ */
+(() => {
+  const wrap = $('#whWrap'), p = $('#whP'), bar = $('#whBar');
+  if (!wrap || !p) return;
+  const text = '没人猜错，只是有人离得更远。写下你的精确数字，剩下的事交给误差。';
+  // 中文按字拆、英文数字按词拆 —— 否则 \S+ 会把整句当一个词
+  const words = text.match(/[A-Za-z0-9.]+|[\u4e00-\u9fa5]|，|。|、|！|？/g) || [text];
+  p.innerHTML = words.map(w => `<span class="w">${w}</span>`).join(' ');
+  const spans = $$('.w', p);
+  let cur = -1;
+  track(wrap, pp => {
+    bar.style.transform = `scaleX(${pp.toFixed(4)})`;
+    const i = Math.min(spans.length - 1, Math.floor(pp * spans.length));
+    if (i === cur) return;
+    cur = i;
+    spans.forEach((s, k) => {
+      s.classList.toggle('on', k < i);
+      s.classList.toggle('hot', k === i);
+    });
+  });
+})();
+
+/* ═════ 30 3D tunnel zoom ═════ */
+(() => {
+  const wrap = $('#tunWrap'), tun = $('#tun'), hud = $('#tunHud');
+  if (!wrap || !tun) return;
+  const PLANES = 8, SPACING = 320, DISTANCE = 2600;
+  const labels = ['AAPL', 'NVDA', 'TSLA', 'GOOGL', 'SPY', 'GLD', 'USDG', 'MSFT'];
+  tun.innerHTML = Array.from({ length: PLANES }, (_, k) =>
+    `<div class="tun-plane" data-k="${k}"><b>${labels[k]}</b></div>`).join('');
+  const planes = $$('.tun-plane', tun);
+  track(wrap, p => {
+    planes.forEach((el, k) => {
+      const z = (k * SPACING + p * DISTANCE) % DISTANCE - DISTANCE;
+      const op = clamp((-z - 180) / 620);                 // 靠近镜头时淡出，避免糊住
+      el.style.transform = `translate3d(0,0,${z.toFixed(1)}px)`;
+      el.style.opacity = op.toFixed(3);
+    });
+    hud.textContent = `DEPTH ${Math.round(p * 100)}% · ${PLANES} PLANES`;
+  });
+})();
+
+/* ═════ 29 颗粒/故障是纯 CSS，这里只补一个「进入视口才播」的开关 ═════ */
+(() => {
+  const poster = $('.poster');
+  if (!poster || REDUCE) return;
+  const g = $('.grain', poster), gl = $('.glitch', poster);
+  if (!g || !gl) return;
+  g.style.animationPlayState = 'paused';
+  gl.style.setProperty('--paused', '1');
+  if (!window.IntersectionObserver) { g.style.animationPlayState = 'running'; return; }
+  new IntersectionObserver(es => {
+    g.style.animationPlayState = es[0].isIntersecting ? 'running' : 'paused';
+  }, { threshold: 0.1 }).observe(poster);
+})();
+</script>
+</body>
+</html>

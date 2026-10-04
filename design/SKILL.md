@@ -1,11 +1,41 @@
 ---
 name: design
-description: Design or redesign frontend pages and product UI. Use for layouts, visual systems, dashboards and interaction design; not copy-only edits.
+description: Design or redesign frontend pages and product UI, including motion and scroll choreography (animations, scroll effects, page transitions, hover and pointer interactions). Use for layouts, visual systems, dashboards and interaction design; not copy-only edits.
 ---
 
 # Frontend design
 
 Match the user's audience, brand, references and existing stack. For a redesign, preserve working routes, content, analytics and accessibility unless the requested change includes them. Ask only when preserve vs overhaul is genuinely unclear.
+
+## Design direction gate
+
+Do not start from vague requests such as “make it beautiful”, “premium” or “more modern”. Those are outcomes, not design decisions. For a greenfield page, a visual overhaul, or an explicit request for a more distinctive look, run a short design-direction interview before changing UI.
+
+- Inspect the existing routes, tokens, components, content and current visual state first.
+- Ask high-signal questions about positioning, user/job, primary action, visual references, anti-references, density, platform, motion, brand constraints, and what must not change.
+- Ask in small rounds (up to 6 questions), then summarize the answers as a visual brief. Do not implement while a high-impact choice is unresolved.
+- If the user has already supplied enough direction, infer the rest and state the assumptions instead of asking a questionnaire.
+- For a small local UI fix, skip the interview and reuse the nearest working pattern.
+
+Read [Design brief](references/design-brief.md) for the interview prompts, premium-mode heuristics, and implementation handoff.
+
+## Premium and distinctive mode
+
+When the brief asks for a high-end, tasteful, or unusual result, treat that as controlled art direction, not an effects checklist.
+
+- Choose one dominant visual idea and one memorable interaction; keep the rest quiet.
+- Establish hierarchy through typography, alignment, spacing, material contrast, and real content before adding gradients, glass, glow, or animation.
+- Use a small token system: semantic surfaces, one accent family, a restrained type scale, a spacing rhythm, and a short radius/shadow scale.
+- Provide positive references and at least one anti-reference. Extract principles; do not collage or imitate a named product.
+- Remove generic AI tells: equal cards, decorative eyebrows, fake metrics, redundant badges, random gradients, excessive rounded corners, and filler sections.
+- “Premium” must survive a grayscale and narrow-viewport check; decoration cannot carry the hierarchy.
+
+## Build in passes
+
+1. **Brief:** write the information hierarchy, content model, visual direction, tokens, states, responsive behavior, and no-go list. Do not write code yet.
+2. **Representative surface:** implement one key route or state using existing primitives, real copy, and the smallest necessary CSS/component changes.
+3. **Visual QA:** inspect desktop and narrow screenshots, plus relevant loading/empty/error/focus states. Fix clipping, hierarchy, contrast, density, and interaction issues before expanding the direction to sibling pages.
+4. **Systemize only after proof:** promote repeated values or patterns into existing tokens/components; do not create a design system for a single screen.
 
 ## Route before reading
 
@@ -16,6 +46,7 @@ Match the user's audience, brand, references and existing stack. For a redesign,
 | Existing-site redesign or named visual pattern | [Vocabulary and redesign](references/vocabulary.md) |
 | Motion or scroll choreography requested | [Motion examples](references/motion.md); optional [dials](references/dials.md) to describe intensity |
 | Concrete palette, typography or chart recommendations | [Design database](references/uiux-db.md) |
+| Need real reference sites, copy-paste component source or motion specifics | [Design sources](references/sources.md) |
 | A particular design system is required | Its section in [official sources](references/appendix.md); verify current API before installation |
 | User asks to maintain a reusable block collection | [Block guidance](references/block-library.md) |
 

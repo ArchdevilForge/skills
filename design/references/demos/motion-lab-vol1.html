@@ -1,0 +1,932 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>前端动效实验室 · 14 个有名字的模式</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+:root{
+  --bg:#07060d;--panel:#0d0a19;--panel2:#0a0814;--line:rgba(255,255,255,.09);
+  --ink:#efeaff;--dim:#9a92bf;--pink:#ff2fd0;--purple:#7b3dff;--cyan:#4be1ff;--lime:#b6ff3d;
+  --eo:cubic-bezier(.22,1,.36,1);
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+body::before{ /* 网格背景，呼应参考站 shader 里的 uLines */
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.55;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px);
+  background-size:100% 56px;
+  mask-image:radial-gradient(circle at 50% 0%,#000 20%,transparent 85%);
+}
+.wrap{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:0 20px 120px}
+.dim{color:var(--dim)}
+
+/* ── 阅读进度条 ───────────────────────────── */
+#bar{position:fixed;top:0;left:0;right:0;height:2px;z-index:60;background:rgba(255,255,255,.06)}
+#barFill{height:100%;background:linear-gradient(90deg,var(--pink),var(--purple),var(--cyan));
+  transform:scaleX(0);transform-origin:0 50%;will-change:transform}
+
+/* ── 顶栏 / 索引 ──────────────────────────── */
+header.top{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);
+  background:linear-gradient(180deg,rgba(7,6,13,.92),rgba(7,6,13,.6));border-bottom:1px solid var(--line)}
+.top-in{max-width:1080px;margin:0 auto;padding:10px 20px;display:flex;gap:14px;align-items:center}
+.brand{font-family:var(--mono);font-size:13px;letter-spacing:.14em;white-space:nowrap;display:flex;align-items:center;gap:8px}
+.brand i{width:7px;height:7px;border-radius:50%;background:var(--pink);box-shadow:0 0 12px var(--pink);animation:pulse 2.4s var(--eo) infinite}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.6);opacity:.5}}
+nav.toc{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 0}
+nav.toc::-webkit-scrollbar{display:none}
+nav.toc a{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--dim);text-decoration:none;
+  border:1px solid var(--line);border-radius:999px;padding:5px 10px;white-space:nowrap;transition:color .25s,background .25s,border-color .25s}
+nav.toc a:hover{color:var(--ink);background:rgba(255,47,208,.12);border-color:rgba(255,47,208,.45)}
+
+/* ── Hero + canvas 网格 ───────────────────── */
+.hero{position:relative;min-height:92vh;display:flex;align-items:center;border-bottom:1px solid var(--line)}
+#grid{position:absolute;inset:0;width:100%;height:100%}
+.hero-in{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:90px 20px;width:100%}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.28em;color:var(--pink);margin:0 0 22px}
+h1{font-size:clamp(30px,6vw,62px);line-height:1.06;margin:0 0 22px;letter-spacing:-.02em;font-weight:800}
+h1 em{font-style:normal;background:linear-gradient(92deg,var(--pink),var(--purple) 60%,var(--cyan));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{max-width:56ch;color:var(--dim);font-size:15px;line-height:1.75;margin:0 0 34px}
+.btn{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:13px;letter-spacing:.1em;
+  color:#12061c;background:linear-gradient(92deg,var(--pink),#ff7ae6);text-decoration:none;font-weight:700;
+  padding:14px 26px;border:0;cursor:pointer;transition:transform .35s var(--eo),box-shadow .35s var(--eo);
+  clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px)}
+.btn:hover{transform:translateY(-2px);box-shadow:0 14px 40px rgba(255,47,208,.4)}
+.hero-hint{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:10px;
+  letter-spacing:.24em;color:var(--dim);text-align:center}
+.hero-hint b{display:block;margin-top:6px;font-size:14px;animation:bob 1.8s var(--eo) infinite}
+@keyframes bob{0%,100%{transform:translateY(0);opacity:.4}50%{transform:translateY(6px);opacity:1}}
+
+/* ── Lab 通用 ─────────────────────────────── */
+.lab{padding:66px 0 0;scroll-margin-top:64px}
+.lab-head{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:baseline}
+.num{font-family:var(--mono);font-size:11px;color:var(--pink);border:1px solid rgba(255,47,208,.35);
+  border-radius:6px;padding:3px 7px;align-self:center}
+h2{margin:0;font-size:clamp(17px,2.4vw,23px);letter-spacing:-.01em;font-weight:700}
+h2 .cn{font-family:var(--sans);font-size:13px;font-weight:400;color:var(--dim);margin-left:10px}
+.rp{font-family:var(--mono);font-size:11px;color:var(--dim);background:transparent;border:1px solid var(--line);
+  border-radius:999px;padding:5px 11px;cursor:pointer;transition:color .25s,border-color .25s}
+.rp:hover{color:var(--ink);border-color:var(--pink)}
+.meta{grid-column:2/-1;margin:6px 0 0;font-family:var(--mono);font-size:11.5px;line-height:1.75;color:#7e77a3}
+.meta b{color:#b9b1e0;font-weight:600}
+.stage{position:relative;margin-top:20px;border:1px solid var(--line);border-radius:16px;overflow:hidden;
+  background:linear-gradient(180deg,var(--panel),var(--panel2));padding:30px}
+.stage.tall{min-height:min(66vh,460px);display:flex;align-items:center;justify-content:center}
+
+/* ── 01 stagger ───────────────────────────── */
+.grid3{display:grid;gap:14px;grid-template-columns:repeat(3,1fr)}
+@media(max-width:680px){.grid3{grid-template-columns:repeat(2,1fr)}}
+.card{border:1px solid var(--line);border-radius:12px;padding:16px;background:#0b0916;min-height:98px}
+.card .t{font-family:var(--mono);font-size:11px;color:var(--pink);letter-spacing:.1em}
+.card .s{font-size:13px;color:var(--dim);margin-top:8px;line-height:1.6}
+[data-reveal] .card{opacity:0;transform:translateY(32px);
+  transition:opacity .6s var(--eo),transform .6s var(--eo);transition-delay:calc(var(--i) * 80ms)}
+[data-reveal].in .card{opacity:1;transform:none}
+
+/* ── 02 split text ────────────────────────── */
+.split-line{overflow:hidden;padding:0 0 .12em;margin:0}
+.split{font-size:clamp(26px,5.4vw,54px);font-weight:800;letter-spacing:-.02em;text-align:center;line-height:1.15}
+.ch{display:inline-block;transform:translateY(110%) rotate(4deg);opacity:0;
+  transition:transform .9s var(--eo),opacity .5s linear;transition-delay:calc(var(--i) * 10ms)}
+.in .ch{transform:none;opacity:1}
+.pinky{color:var(--pink)}
+
+/* ── 03 clip-path ─────────────────────────── */
+.clipbox{position:relative;height:min(46vh,300px);border-radius:12px;overflow:hidden;background:#120d24}
+.clipbox .art{position:absolute;inset:0;transform:scale(1.16);transition:transform 1.2s var(--eo);
+  background:radial-gradient(120% 90% at 18% 20%,#ff2fd0 0,transparent 55%),
+             radial-gradient(100% 90% at 82% 75%,#7b3dff 0,transparent 60%),
+             conic-gradient(from 200deg at 60% 30%,#4be1ff33,#0000),#0d0a19}
+.clipbox .label{position:absolute;left:22px;bottom:18px;font-family:var(--mono);font-size:12px;letter-spacing:.14em;z-index:2}
+[data-reveal] .clipbox{clip-path:inset(0 100% 0 0)}
+[data-reveal].in .clipbox{clip-path:inset(0 0 0 0);transition:clip-path 1.1s var(--eo)}
+[data-reveal].in .clipbox .art{transform:scale(1)}
+
+/* ── 04 parallax ──────────────────────────── */
+.parallax{position:relative;height:min(52vh,340px);border-radius:12px;overflow:hidden;background:#0a0814}
+.pl{position:absolute;left:0;right:0;will-change:transform}
+.pl-1{top:0;height:100%;background:radial-gradient(70% 60% at 50% 110%,#7b3dff55,transparent 70%)}
+.pl-2{top:22%;height:24%;background:repeating-linear-gradient(90deg,#ff2fd044 0 2px,transparent 2px 46px)}
+.pl-3{top:52%;height:38%;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;padding:0 22px}
+.pl-3 span{font-family:var(--mono);font-size:12px;border:1px solid var(--line);border-radius:999px;padding:7px 13px;background:#0d0a19cc}
+.pl-tag{position:absolute;right:12px;top:10px;font-family:var(--mono);font-size:10px;color:#6f689b;z-index:3}
+
+/* ── 05 / 06 / 07 钉住型（需要全出血，不能有 overflow:hidden 祖先） ── */
+.bleed{position:relative;margin-top:20px}
+.pin-stage{position:sticky;top:0;height:100vh;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.zoom-veil{position:absolute;left:50%;top:50%;width:80px;height:80px;border-radius:50%;margin:-40px 0 0 -40px;
+  background:radial-gradient(circle at 50% 45%,#fff,#ffd9f7 55%,#ff8fe6);transform:scale(.35);will-change:transform}
+.zoom-a,.zoom-b{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:0 24px;will-change:transform,opacity}
+.zoom-a{font-weight:800;font-size:clamp(26px,6vw,58px);line-height:1.1;letter-spacing:-.02em}
+.zoom-a small{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.24em;color:var(--dim);margin-top:18px;font-weight:400}
+.zoom-b{background:#fff;color:#0c0716}
+.zoom-b h3{margin:0;font-size:clamp(26px,6.4vw,62px);letter-spacing:-.02em;font-weight:800}
+.zoom-b p{font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:#7b3dff;margin:16px 0 0}
+
+.scrolly{display:grid;grid-template-columns:1fr 1fr;gap:46px;align-items:center;max-width:1080px;width:100%;padding:0 20px}
+@media(max-width:760px){.scrolly{grid-template-columns:1fr;gap:22px}}
+.step{opacity:.28;transform:translateY(10px);transition:opacity .5s var(--eo),transform .5s var(--eo)}
+.step.on{opacity:1;transform:none}
+.step h4{margin:0 0 6px;font-size:19px;font-family:var(--mono);letter-spacing:.02em}
+.step p{margin:0 0 22px;font-size:13.5px;color:var(--dim);line-height:1.7;max-width:34ch}
+.viz{position:relative;height:min(52vh,380px);border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#0a0814}
+.viz i{position:absolute;inset:0;opacity:0;transition:opacity .55s var(--eo),transform .8s var(--eo);transform:scale(1.06)}
+.viz i.on{opacity:1;transform:none}
+.dots{position:absolute;right:14px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px}
+.dots b{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.22);transition:background .4s,transform .4s}
+.dots b.on{background:var(--pink);transform:scale(1.7)}
+
+.h-stage{position:sticky;top:0;height:100vh;overflow:hidden;display:flex;flex-direction:column;justify-content:center}
+.h-head{max-width:1080px;width:100%;margin:0 auto 26px;padding:0 20px;display:flex;align-items:center;gap:16px}
+.h-head .lb{font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--dim);white-space:nowrap}
+.h-bar{flex:1;height:2px;background:rgba(255,255,255,.1);position:relative;overflow:hidden}
+.h-bar i{position:absolute;inset:0;background:linear-gradient(90deg,var(--pink),var(--cyan));transform-origin:0 50%;transform:scaleX(0)}
+.h-pct{font-family:var(--mono);font-size:11px;color:var(--pink);width:46px;text-align:right}
+.h-track{display:flex;gap:22px;padding:0 20px;will-change:transform;align-items:stretch}
+.h-card{flex:0 0 min(74vw,430px);border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#0b0916}
+.h-card .thumb{height:min(38vh,250px);position:relative;overflow:hidden}
+.h-card .thumb .art{position:absolute;inset:0;transform:scale(1.2);will-change:transform}
+.h-card .body{padding:18px 20px 22px}
+.h-card h4{margin:0 0 8px;font-size:17px}
+.h-card p{margin:0;font-size:13px;color:var(--dim);line-height:1.7}
+
+/* ── 08/09 文字效果 ──────────────────────── */
+.txt-demo{font-family:var(--mono);font-size:clamp(15px,2.6vw,22px);letter-spacing:.02em;min-height:3.4em;line-height:1.7}
+.txt-demo b{color:var(--lime);font-weight:400}
+.caret{display:inline-block;width:9px;height:1.05em;background:var(--pink);vertical-align:-.16em;margin-left:4px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+@media(prefers-reduced-motion:reduce){.caret{animation:none}}
+
+/* ── 10 marquee ──────────────────────────── */
+.mq{overflow:hidden;border:1px solid var(--line);border-radius:12px;background:#0b0916;padding:16px 0;position:relative;
+  mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+.mq-track{display:flex;width:max-content;animation:mqx 22s linear infinite}
+.mq:hover .mq-track{animation-play-state:paused}
+@keyframes mqx{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.mq-set{display:flex;gap:38px;padding-right:38px}
+.mq-set span{font-family:var(--mono);font-size:14px;letter-spacing:.08em;white-space:nowrap;display:flex;align-items:center;gap:9px}
+.mq-set span i{width:8px;height:8px;border-radius:50%;display:inline-block}
+@media(prefers-reduced-motion:reduce){.mq-track{animation:none}}
+
+/* ── 11 指针交互 ─────────────────────────── */
+.ptr{display:grid;gap:16px;grid-template-columns:repeat(3,1fr)}
+@media(max-width:780px){.ptr{grid-template-columns:1fr}}
+.ptr .cell{border:1px solid var(--line);border-radius:14px;background:#0b0916;min-height:210px;
+  display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:22px}
+.mag{font-family:var(--mono);font-size:13px;letter-spacing:.1em;color:#12061c;font-weight:700;border:0;cursor:pointer;
+  padding:16px 30px;background:linear-gradient(92deg,var(--pink),#ff7ae6);
+  clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);
+  transition:transform .5s var(--eo),box-shadow .4s var(--eo);will-change:transform}
+.tilt{width:min(78%,240px);aspect-ratio:4/3;border-radius:14px;border:1px solid rgba(255,255,255,.14);
+  background:linear-gradient(180deg,#151029,#0b0916);display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--dim);
+  transform-style:preserve-3d;will-change:transform;position:relative;overflow:hidden}
+.spot{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--dim)}
+.spot::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .4s;
+  background:radial-gradient(220px circle at var(--mx,50%) var(--my,50%),rgba(255,47,208,.30),transparent 62%)}
+.spot:hover::after{opacity:1}
+
+/* ── 12 counter ──────────────────────────── */
+.counts{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;text-align:center}
+@media(max-width:680px){.counts{grid-template-columns:1fr}}
+.counts div{border:1px solid var(--line);border-radius:12px;padding:26px 14px;background:#0b0916}
+.counts b{display:block;font-size:clamp(24px,4.4vw,40px);font-weight:800;letter-spacing:-.02em;
+  background:linear-gradient(92deg,#fff,#c9b6ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.counts small{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;color:var(--dim);margin-top:12px}
+
+/* ── 13 easing ───────────────────────────── */
+.ease-list{display:grid;gap:12px}
+.ease-row{display:grid;grid-template-columns:170px 1fr 116px;gap:16px;align-items:center}
+@media(max-width:700px){.ease-row{grid-template-columns:1fr 84px;grid-template-areas:"n c" "r c"}}
+@media(max-width:700px){.ease-row .en{grid-area:n}.ease-row .et{grid-area:r}.ease-row .ep{grid-area:c}}
+.en{font-family:var(--mono);font-size:12px;color:var(--dim)}
+.et{height:2px;background:rgba(255,255,255,.09);position:relative;border-radius:2px}
+.et i{position:absolute;top:-5px;left:0;width:12px;height:12px;border-radius:50%;will-change:transform}
+.ep{width:116px;height:52px}
+
+/* ── 14 FLIP ─────────────────────────────── */
+.flip-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;align-items:start}
+@media(max-width:700px){.flip-grid{grid-template-columns:repeat(2,1fr)}}
+.flip-card{border:1px solid var(--line);border-radius:12px;background:#0b0916;padding:18px;cursor:pointer;
+  min-height:106px;transition:border-color .3s,background .3s}
+.flip-card:hover{border-color:rgba(255,47,208,.5)}
+.flip-card .ft{font-family:var(--mono);font-size:11px;color:var(--pink);letter-spacing:.1em}
+.flip-card .fd{font-size:13px;color:var(--dim);line-height:1.65;margin-top:9px;max-height:0;overflow:hidden;opacity:0;
+  transition:max-height .45s var(--eo),opacity .35s var(--eo)}
+.flip-card.open{grid-column:1/-1;background:linear-gradient(180deg,#150e28,#0b0916)}
+.flip-card.open .fd{max-height:180px;opacity:1}
+
+footer{margin-top:90px;padding-top:26px;border-top:1px solid var(--line);font-family:var(--mono);font-size:11px;
+  color:#6f689b;line-height:2}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .brand i{animation:none}
+}
+</style>
+</head>
+<body>
+
+<div id="bar"><div id="barFill"></div></div>
+
+<header class="top">
+  <div class="top-in">
+    <div class="brand"><i></i>MOTION<span class="dim">LAB</span></div>
+    <nav class="toc">
+      <a href="#l01">stagger</a><a href="#l02">split-text</a><a href="#l03">clip-path</a>
+      <a href="#l04">parallax</a><a href="#l05">pin+scrub</a><a href="#l06">scrollytelling</a>
+      <a href="#l07">h-scroll</a><a href="#l08">scramble</a><a href="#l09">typewriter</a>
+      <a href="#l10">marquee</a><a href="#l11">pointer</a><a href="#l12">counter</a>
+      <a href="#l13">easing</a><a href="#l14">FLIP</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <canvas id="grid"></canvas>
+  <div class="hero-in">
+    <p class="kicker">FRONTEND MOTION · 14 PATTERNS</p>
+    <h1>动效不是"炫酷"<br>是 14 个<em>有名字的模式</em></h1>
+    <p class="lead">
+      全部真实运行：纯 CSS + 原生 JS，<b>没有 GSAP、没有 Three.js、没有 CDN</b>。
+      每一段标题下面写着它的术语、触发条件、属性和缓动参数 —— 直接把那行抄进 prompt 就能复现。
+    </p>
+    <button class="btn" onclick="document.getElementById('l01').scrollIntoView()">开始 ↓</button>
+  </div>
+  <p class="hero-hint">SCROLL<b>▼</b></p>
+</section>
+
+<div class="wrap">
+
+  <!-- 01 ─────────────────────────────────── -->
+  <section class="lab" id="l01">
+    <div class="lab-head">
+      <span class="num">01</span>
+      <h2>staggered reveal on scroll<span class="cn">错峰入场</span></h2>
+      <button class="rp" data-replay>↻ 重播</button>
+      <p class="meta"><b>触发</b> IntersectionObserver threshold .18 &nbsp;·&nbsp; <b>变化</b> opacity 0→1 / translateY(32px)→0
+        &nbsp;·&nbsp; <b>时间</b> 600ms cubic-bezier(.22,1,.36,1)，每项再 +80ms（用 <b>--i</b> 变量）</p>
+    </div>
+    <div class="stage" data-reveal>
+      <div class="grid3">
+        <div class="card"><div class="t">FINISH</div><div class="s">结算价越接近你的数字，分到的池子份额越大。</div></div>
+        <div class="card"><div class="t">USDG</div><div class="s">入场与结算都用同一种稳定币，不涉及清算。</div></div>
+        <div class="card"><div class="t">PRECISION</div><div class="s">没人猜错，只是有人离得更远。</div></div>
+        <div class="card"><div class="t">POOLS</div><div class="s">每个标的、每个到期时间都是一个独立池子。</div></div>
+        <div class="card"><div class="t">SCORE</div><div class="s">按误差排名，不是按方向对错。</div></div>
+        <div class="card"><div class="t">ON-CHAIN</div><div class="s">规则公开，任何人都能复核每一笔。</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 ─────────────────────────────────── -->
+  <section class="lab" id="l02">
+    <div class="lab-head">
+      <span class="num">02</span>
+      <h2>split text + stagger<span class="cn">逐字揭示</span></h2>
+      <button class="rp" data-replay>↻ 重播</button>
+      <p class="meta"><b>做法</b> 把标题按字符包成 span，父级 overflow:hidden 当遮罩
+        &nbsp;·&nbsp; <b>变化</b> translateY(110%)→0 + rotate(4deg)→0 &nbsp;·&nbsp; <b>时间</b> 900ms easeOutQuint，stagger 10ms/字</p>
+    </div>
+    <div class="stage tall" data-reveal>
+      <p class="split-line split" id="splitTitle">PICK THE NUMBER.</p>
+    </div>
+  </section>
+
+  <!-- 03 ─────────────────────────────────── -->
+  <section class="lab" id="l03">
+    <div class="lab-head">
+      <span class="num">03</span>
+      <h2>clip-path reveal<span class="cn">遮罩揭示</span></h2>
+      <button class="rp" data-replay>↻ 重播</button>
+      <p class="meta"><b>变化</b> clip-path: inset(0 100% 0 0) → inset(0)，同时内部图 scale(1.16)→1
+        &nbsp;·&nbsp; <b>时间</b> 1100ms / 1200ms easeOutQuint，两条同时跑</p>
+    </div>
+    <div class="stage" data-reveal>
+      <div class="clipbox"><div class="art"></div><span class="label">CLIP-PATH · INSET</span></div>
+    </div>
+  </section>
+
+  <!-- 04 ─────────────────────────────────── -->
+  <section class="lab" id="l04">
+    <div class="lab-head">
+      <span class="num">04</span>
+      <h2>parallax<span class="cn">视差</span></h2>
+      <p class="meta"><b>触发</b> 滚动进度（元素进入视口起算）&nbsp;·&nbsp; <b>变化</b> translateY × 不同 data-speed（.10 / .26 / .48）
+        &nbsp;·&nbsp; 三层速度差产生深度 &nbsp;·&nbsp; 只动 transform</p>
+    </div>
+    <div class="stage">
+      <div class="parallax" id="parallax">
+        <span class="pl-tag">speed .10 / .26 / .48</span>
+        <div class="pl pl-1" data-speed="0.10"></div>
+        <div class="pl pl-2" data-speed="0.26"></div>
+        <div class="pl pl-3" data-speed="0.48">
+          <span>AAPL</span><span>NVDA</span><span>TSLA</span><span>GOOGL</span><span>SPY</span><span>GLD</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 ─────────────────────────────────── -->
+  <section class="lab" id="l05">
+    <div class="lab-head">
+      <span class="num">05</span>
+      <h2>pinned scroll scrub<span class="cn">钉住 + 滚动擦洗</span></h2>
+      <p class="meta">这就是参考站首屏那一下：<b>position:sticky</b> 钉住整屏，滚动进度直接映射成圆的 scale
+        &nbsp;·&nbsp; <b>变化</b> scale .35 → 26（铺满）&nbsp;·&nbsp; 进度前 75% 跑缩放，55%+ 文字上移淡出，80%+ 白底文字淡入
+        &nbsp;·&nbsp; <b>ease: none</b>（scrub 必须线性，缓动交给手势）</p>
+    </div>
+    <div class="bleed" id="zoomWrap" style="height:220vh">
+      <div class="pin-stage">
+        <div class="zoom-veil" id="zoomVeil"></div>
+        <div class="zoom-a" id="zoomA">
+          DON'T PICK A SIDE.
+          <small>往下滚 · 圆形遮罩放大铺满</small>
+        </div>
+        <div class="zoom-b" id="zoomB">
+          <h3>PICK THE NUMBER.</h3>
+          <p>SCROLL-LINKED · SCRUB · NO EASING</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 06 ─────────────────────────────────── -->
+  <section class="lab" id="l06">
+    <div class="lab-head">
+      <span class="num">06</span>
+      <h2>scrollytelling<span class="cn">滚动叙事分步</span></h2>
+      <p class="meta"><b>触发</b> 同一段滚动进度按阶段切 index（Math.floor(p × 4)）&nbsp;·&nbsp; <b>变化</b> 文案 opacity .28→1 + 视觉块 scale(1.06)→1 交叉淡入
+        &nbsp;·&nbsp; 进度点同步高亮</p>
+    </div>
+    <div class="bleed" id="slyWrap" style="height:280vh">
+      <div class="pin-stage">
+        <div class="scrolly">
+          <div id="steps">
+            <div class="step"><h4>01 / CONNECT</h4><p>连钱包，充 USDG。没有托管，没有 KYC 表格。</p></div>
+            <div class="step"><h4>02 / POST</h4><p>选标的、选到期时间，写下你的精确数字。</p></div>
+            <div class="step"><h4>03 / SCORE</h4><p>到期时按误差排名，越近分越多。</p></div>
+            <div class="step"><h4>04 / SETTLE</h4><p>池子按分数分配，链上结算，历史可查。</p></div>
+          </div>
+          <div style="position:relative">
+            <div class="viz">
+              <i style="background:radial-gradient(90% 70% at 30% 20%,#ff2fd066,transparent 60%),#0a0814"></i>
+              <i style="background:radial-gradient(90% 70% at 70% 25%,#7b3dff77,transparent 60%),#0a0814"></i>
+              <i style="background:radial-gradient(90% 70% at 40% 75%,#4be1ff55,transparent 60%),#0a0814"></i>
+              <i style="background:radial-gradient(90% 70% at 60% 60%,#b6ff3d55,transparent 60%),#0a0814"></i>
+            </div>
+            <div class="dots" id="dots"><b></b><b></b><b></b><b></b></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 07 ─────────────────────────────────── -->
+  <section class="lab" id="l07">
+    <div class="lab-head">
+      <span class="num">07</span>
+      <h2>horizontal scroll hijack + containerAnimation<span class="cn">横向滚动劫持</span></h2>
+      <p class="meta">钉子容器高度 = 100vh + (轨道宽 − 视口宽)，所以<b>滚动 1px 等于横移 1px</b>，没有"卡顿感"
+        &nbsp;·&nbsp; 卡片内部再按它距视口中心的距离算第二层进度（GSAP 里叫 <b>containerAnimation</b>）：图片反向位移 + 非中心卡片降透明度
+        &nbsp;·&nbsp; 顶部进度条用 onUpdate 的 progress 驱动</p>
+    </div>
+    <div class="bleed" id="hWrap">
+      <div class="h-stage">
+        <div class="h-head">
+          <span class="lb">HORIZONTAL · SCRUB</span>
+          <div class="h-bar"><i id="hBar"></i></div>
+          <span class="h-pct" id="hPct">0%</span>
+        </div>
+        <div class="h-track" id="hTrack"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 08 ─────────────────────────────────── -->
+  <section class="lab" id="l08">
+    <div class="lab-head">
+      <span class="num">08</span>
+      <h2>text scramble / decode<span class="cn">乱码解码</span></h2>
+      <button class="rp" id="scrambleBtn">↻ 重播</button>
+      <p class="meta"><b>做法</b> requestAnimationFrame 每帧替换未"揭示"的字符，阈值按字序递增（i/n × .6）
+        &nbsp;·&nbsp; <b>时间</b> 1400ms &nbsp;·&nbsp; 进入视口 40% 自动触发一次</p>
+    </div>
+    <div class="stage" data-reveal>
+      <p class="txt-demo" id="scrambleText">NOBODY IS WRONG. SOME ARE JUST FURTHER AWAY.</p>
+    </div>
+  </section>
+
+  <!-- 09 ─────────────────────────────────── -->
+  <section class="lab" id="l09">
+    <div class="lab-head">
+      <span class="num">09</span>
+      <h2>typewriter<span class="cn">打字机</span></h2>
+      <p class="meta"><b>做法</b> setTimeout 递归，逐字 52ms / 退格 28ms，停在整句 1500ms
+        &nbsp;·&nbsp; 光标是 steps(1) 的 blink 动画（这样是硬闪，不是渐变）</p>
+    </div>
+    <div class="stage" data-reveal>
+      <p class="txt-demo"><b id="typeText"></b><span class="caret"></span></p>
+    </div>
+  </section>
+
+  <!-- 10 ─────────────────────────────────── -->
+  <section class="lab" id="l10">
+    <div class="lab-head">
+      <span class="num">10</span>
+      <h2>marquee / infinite ticker<span class="cn">无缝跑马灯</span></h2>
+      <p class="meta"><b>做法</b> 内容复制两份，轨道 translateX(0 → −50%) 无限循环，数学上正好无缝
+        &nbsp;·&nbsp; hover 时 <b>animation-play-state: paused</b>（不用 JS）&nbsp;·&nbsp; 两端加 mask-image 羽化</p>
+    </div>
+    <div class="stage" data-reveal>
+      <div class="mq"><div class="mq-track" id="mqTrack"></div></div>
+    </div>
+  </section>
+
+  <!-- 11 ─────────────────────────────────── -->
+  <section class="lab" id="l11">
+    <div class="lab-head">
+      <span class="num">11</span>
+      <h2>pointer interactions<span class="cn">指针交互三件套</span></h2>
+      <p class="meta"><b>磁性按钮</b> 指针偏移 × .34，离开回弹 500ms easeOutQuint &nbsp;·&nbsp;
+        <b>3D tilt</b> rotateY(x × 12deg) / rotateX(−y × 10deg)，父级 perspective 800px &nbsp;·&nbsp;
+        <b>spotlight</b> 把指针坐标写进 --mx/--my，radial-gradient 跟随</p>
+    </div>
+    <div class="stage">
+      <div class="ptr">
+        <div class="cell" id="magCell"><button class="mag" id="magBtn">MAGNETIC</button></div>
+        <div class="cell" id="tiltCell"><div class="tilt" id="tiltCard">3D TILT · PERSPECTIVE</div></div>
+        <div class="cell"><div class="spot" id="spot">SPOTLIGHT · CSS VAR</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 12 ─────────────────────────────────── -->
+  <section class="lab" id="l12">
+    <div class="lab-head">
+      <span class="num">12</span>
+      <h2>number counter / odometer<span class="cn">数字滚动</span></h2>
+      <button class="rp" data-replay-count>↻ 重播</button>
+      <p class="meta"><b>触发</b> 进入视口 &nbsp;·&nbsp; <b>变化</b> 0 → 目标值，用 easeOutQuart 算插值（<b>不是</b>线性，线性看着很廉价）
+        &nbsp;·&nbsp; <b>时间</b> 1600ms &nbsp;·&nbsp; 千分位用 Intl.NumberFormat</p>
+    </div>
+    <div class="stage" data-reveal-count>
+      <div class="counts">
+        <div><b data-to="12480" data-fmt="int">0</b><small>USDG SETTLED</small></div>
+        <div><b data-to="98.4" data-fmt="dec" data-dec="1">0</b><small>UPTIME %</small></div>
+        <div><b data-to="3.03" data-fmt="dec" data-dec="2">0</b><small>HERO SCALE</small></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 13 ─────────────────────────────────── -->
+  <section class="lab" id="l13">
+    <div class="lab-head">
+      <span class="num">13</span>
+      <h2>easing comparison<span class="cn">缓动对比</span></h2>
+      <button class="rp" id="easeBtn">↻ 重播</button>
+      <p class="meta">同样的距离、同样的时长，只有曲线不同 —— 廉价感通常来自 <b>linear</b> 和 <b>ease</b>。
+        下方每行是手写的缓动函数，右侧是它真实的曲线：<b>power4.out</b> 快进慢出最"贵"，<b>back.out(3)</b> 会过冲一下</p>
+    </div>
+    <div class="stage"><div class="ease-list" id="easeList"></div></div>
+  </section>
+
+  <!-- 14 ─────────────────────────────────── -->
+  <section class="lab" id="l14">
+    <div class="lab-head">
+      <span class="num">14</span>
+      <h2>FLIP / shared element transition<span class="cn">就地变形转场</span></h2>
+      <p class="meta"><b>FLIP</b> = First(记旧位置) → Last(改布局后记新位置) → Invert(算出位移和缩放差) → Play(从反向位置动画回 0)
+        &nbsp;·&nbsp; <b>时间</b> 420ms easeOutQuint &nbsp;·&nbsp; 现代浏览器里同样的效果可以交给 <b>View Transitions API</b>（<code>document.startViewTransition</code> + <code>view-transition-name</code>），不用手算</p>
+    </div>
+    <div class="stage">
+      <div class="flip-grid" id="flipGrid">
+        <div class="flip-card"><div class="ft">POOL · AAPL</div><div class="fd">到期日价格最接近者拿走大部分池子。误差按绝对值排序，方向不参与评分。</div></div>
+        <div class="flip-card"><div class="ft">POOL · NVDA</div><div class="fd">同一标的可以同时存在多个到期日，各自独立结算。</div></div>
+        <div class="flip-card"><div class="ft">POOL · USDG</div><div class="fd">入场与结算都用 USDG，池子不承担汇率波动。</div></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div>◈ 纯 CSS + 原生 JS，零依赖 · 单文件 · 离线可跑</div>
+    <div>◈ 所有滚动驱动都跑在<b>一个</b> requestAnimationFrame 循环里（Set&lt;ticker&gt;），滚动进度用阻尼 lerp(a,b,1−e^(−s·dt)) 保证帧率无关</div>
+    <div>◈ 尊重 prefers-reduced-motion：自动播放类动画（marquee / blink / pulse）会停，滚动驱动类保留（用户自己控制）</div>
+  </footer>
+</div>
+
+<script>
+/* ───────── 基础工具 ───────── */
+const $  = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const clamp = (v, a = 0, b = 1) => (v < a ? a : v > b ? b : v);
+const lerp  = (a, b, t) => a + (b - a) * t;
+const damp  = (cur, target, s, dt) => lerp(cur, target, 1 - Math.exp(-s * dt)); // 帧率无关的惯性
+const dtSeconds = (ms) => ms / 1000;
+const REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* 手写缓动：t ∈ [0,1] → 进度 */
+const EASE = {
+  linear:    t => t,
+  power1out: t => 1 - Math.pow(1 - t, 1),
+  power2out: t => 1 - Math.pow(1 - t, 2),
+  power4out: t => 1 - Math.pow(1 - t, 4),
+  expoOut:   t => (t >= 1 ? 1 : 1 - Math.pow(2, -10 * t)),
+  backOut:   t => 1 + 2.70158 * Math.pow(t - 1, 3) + 1.70158 * Math.pow(t - 1, 2),
+  sineInOut: t => -(Math.cos(Math.PI * t) - 1) / 2,
+};
+
+/* ───────── 统一的滚动帧循环 ───────── */
+const tickers = new Set();
+let _last = performance.now();
+function tick(now) {
+  const dt = Math.min(0.05, (now - _last) / 1000); _last = now;
+  for (const fn of tickers) { try { fn(dt, now); } catch (e) { /* 单个 demo 出错不拖垮全部 */ } }
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+
+/* 把一个 pin 容器的滚动进度交给回调：p ∈ [0,1] */
+function track(wrap, cb) {
+  let top = 0, span = 1;
+  const measure = () => {
+    top  = wrap.getBoundingClientRect().top + scrollY;
+    span = Math.max(1, wrap.offsetHeight - innerHeight);
+  };
+  measure();
+  addEventListener('resize', measure);
+  new ResizeObserver(measure).observe(wrap);
+  tickers.add(dt => cb(clamp((scrollY - top) / span), dt));
+}
+
+/* ───────── 阅读进度条 ───────── */
+(() => {
+  const fill = $('#barFill');
+  tickers.add(() => {
+    const max = document.documentElement.scrollHeight - innerHeight;
+    fill.style.transform = `scaleX(${max > 0 ? clamp(scrollY / max) : 0})`;
+  });
+})();
+
+/* ───────── reveal 观察器（01 / 02 / 03 共用） ───────── */
+const io = new IntersectionObserver(es => {
+  for (const e of es) if (e.isIntersecting) e.target.classList.add('in');
+}, { threshold: 0.18, rootMargin: '0px 0px -8% 0px' });
+$$('[data-reveal]').forEach(el => io.observe(el));
+
+/* 重播按钮 */
+$$('[data-replay]').forEach(btn => btn.addEventListener('click', () => {
+  const target = document.querySelector(btn.closest('.lab').querySelector('[data-reveal]') ? '[data-reveal]' : '.stage');
+  target.classList.remove('in'); void target.offsetWidth; target.classList.add('in');
+}));
+
+/* ───────── 01 stagger：给每张卡写 --i ───────── */
+$$('.grid3 .card').forEach((el, i) => el.style.setProperty('--i', i));
+
+/* ───────── 02 split text ───────── */
+(() => {
+  const el = $('#splitTitle');
+  if (!el || el.dataset.done) return;
+  const text = el.textContent;
+  el.innerHTML = [...text].map((c, i) =>
+    `<span class="ch" style="--i:${i}${c === '.' ? '' : ''}">${c === ' ' ? '&nbsp;' : c}</span>`
+  ).join('');
+  el.dataset.done = '1';
+})();
+
+/* ───────── 04 parallax ───────── */
+(() => {
+  const box = $('#parallax'); if (!box) return;
+  let top = 0, h = 1;
+  const measure = () => { const r = box.getBoundingClientRect(); top = r.top + scrollY; h = box.offsetHeight; };
+  measure(); addEventListener('resize', measure);
+  const layers = $$('.pl', box).map(el => ({ el, speed: +el.dataset.speed }));
+  tickers.add(() => {
+    const p = clamp((scrollY + innerHeight - top) / (innerHeight + h)); // 从露出到离开
+    for (const l of layers) l.el.style.transform = `translate3d(0,${(0.5 - p) * l.speed * 260}px,0)`;
+  });
+})();
+
+/* ───────── 05 pinned zoom reveal ───────── */
+(() => {
+  const wrap = $('#zoomWrap'); if (!wrap) return;
+  const veil = $('#zoomVeil'), a = $('#zoomA'), b = $('#zoomB');
+  track(wrap, p => {
+    const grow = clamp(p / 0.75);                       // 前 75% 半径长大
+    veil.style.transform = `scale(${lerp(0.35, 26, grow)})`;
+    const fadeA = clamp((p - 0.55) / 0.25);             // 文字 A 上移淡出
+    a.style.opacity  = 1 - fadeA;
+    a.style.transform = `translate3d(0,${-40 * fadeA}px,0)`;
+    b.style.opacity  = clamp((p - 0.78) / 0.16);        // 白底文字 B 淡入
+    b.style.transform = `translate3d(0,${(1 - clamp((p - 0.78) / 0.16)) * 26}px,0)`;
+  });
+})();
+
+/* ───────── 06 scrollytelling ───────── */
+(() => {
+  const wrap = $('#slyWrap'); if (!wrap) return;
+  const steps = $$('#steps .step'), viz = $$('.viz i'), dots = $$('#dots b');
+  let cur = -1;
+  track(wrap, p => {
+    const i = clamp(Math.floor(p * 4), 0, 3);
+    if (i === cur) return;
+    cur = i;
+    steps.forEach((s, k) => s.classList.toggle('on', k === i));
+    viz.forEach((v, k) => v.classList.toggle('on', k === i));
+    dots.forEach((d, k) => d.classList.toggle('on', k === i));
+  });
+})();
+
+/* ───────── 07 horizontal hijack + containerAnimation ───────── */
+(() => {
+  const wrap = $('#hWrap'), track_ = $('#hTrack'), bar = $('#hBar'), pct = $('#hPct');
+  if (!wrap) return;
+  const data = [
+    ['AAPL', 'fa2f8e', 'spacing'], ['NVDA', '76b900', 'volume'], ['TSLA', 'e82127', 'delta'],
+    ['GOOGL', '4285f4', 'trend'], ['SPY', 'b6ff3d', 'index'], ['GLD', 'ffb703', 'hedge'],
+  ];
+  track_.innerHTML = data.map(([name, c, tag]) => `
+    <article class="h-card">
+      <div class="thumb"><div class="art" style="background:
+        radial-gradient(80% 80% at 25% 25%, #${c}55, transparent 62%),
+        radial-gradient(70% 70% at 80% 70%, #7b3dff66, transparent 60%), #0b0916"></div></div>
+      <div class="body"><h4>${name}</h4><p>POOL · ${tag} · 结算价按误差排名分配。</p></div>
+    </article>`).join('');
+  const cards = $$('.h-card', track_);
+
+  let maxX = 0;
+  const measure = () => {
+    maxX = Math.max(0, track_.scrollWidth - innerWidth + 40);
+    wrap.style.height = (innerHeight + maxX) + 'px';   // 1:1 映射
+  };
+  measure();
+  new ResizeObserver(measure).observe(track_);
+  addEventListener('resize', measure);
+
+  track(wrap, p => {
+    const x = -p * maxX;
+    track_.style.transform = `translate3d(${x}px,0,0)`;
+    bar.style.transform = `scaleX(${p})`;
+    pct.textContent = Math.round(p * 100) + '%';
+
+    // containerAnimation 等价物：按卡片中心到视口中心的距离算各自进度
+    for (const card of cards) {
+      const r = card.getBoundingClientRect();           // 已含上面的位移
+      const dist = Math.abs((r.left + r.width / 2) - innerWidth / 2) / (innerWidth / 2 + r.width / 2);
+      const focus = 1 - clamp(dist);
+      card.style.opacity = (0.35 + 0.65 * focus).toFixed(3);
+      card.style.transform = `translate3d(0,${(1 - focus) * 22}px,0)`;
+      const art = card.firstElementChild.firstElementChild;
+      art.style.transform = `scale(1.2) translate3d(${(0.5 - focus) * 40}px,0,0)`;  // 内层反向位移
+    }
+  });
+})();
+
+/* ───────── 08 scramble ───────── */
+(() => {
+  const el = $('#scrambleText'); if (!el) return;
+  const final = el.textContent.trim();
+  const CH = '!<>-_\\/[]{}=+*^?#01XZ';
+  const run = () => {
+    if (REDUCE) { el.textContent = final; return; }
+    const dur = 1400, t0 = performance.now(), n = final.length;
+    (function f(now) {
+      const p = clamp((now - t0) / dur);
+      el.textContent = [...final].map((c, i) => {
+        if (c === ' ') return ' ';
+        return p > i / n * 0.6 + 0.04 ? c : CH[(Math.random() * CH.length) | 0];
+      }).join('');
+      if (p < 1) requestAnimationFrame(f); else el.textContent = final;
+    })(performance.now());
+  };
+  new IntersectionObserver(es => es.forEach(e => e.isIntersecting && run()), { threshold: 0.4 }).observe(el);
+  $('#scrambleBtn').addEventListener('click', run);
+})();
+
+/* ───────── 09 typewriter ───────── */
+(() => {
+  const el = $('#typeText'); if (!el) return;
+  const lines = ['Forecast the exact price.', 'Nobody is wrong.', 'Some are just further away.'];
+  if (REDUCE) { el.textContent = lines[0]; return; }
+  let li = 0, ci = 0, del = false;
+  (function step() {
+    const s = lines[li];
+    ci += del ? -1 : 1;
+    el.textContent = s.slice(0, ci);
+    let wait = del ? 26 : 52;
+    if (!del && ci === s.length) { wait = 1500; del = true; }
+    else if (del && ci === 0) { del = false; li = (li + 1) % lines.length; wait = 260; }
+    setTimeout(step, wait);
+  })();
+})();
+
+/* ───────── 10 marquee（内容复制两份即可无缝） ───────── */
+(() => {
+  const track_ = $('#mqTrack'); if (!track_) return;
+  const items = ['AAPL', 'NVDA', 'TSLA', 'GOOGL', 'MSFT', 'SPY', 'GLD', 'USDG'];
+  const html = `<div class="mq-set">${items.map(s =>
+    `<span><i style="background:hsl(${(s.charCodeAt(0) * 7) % 360} 90% 62%)"></i>${s}</span>`).join('')}</div>`;
+  track_.innerHTML = html + html;   // 两份 → translateX(-50%) 正好接上
+})();
+
+/* ───────── 11 pointer：magnetic / tilt / spotlight ───────── */
+(() => {
+  // 磁性按钮
+  const cell = $('#magCell'), btn = $('#magBtn');
+  if (cell && btn) {
+    let tx = 0, ty = 0, cx = 0, cy = 0, t = 0;
+    cell.addEventListener('pointermove', e => {
+      const r = cell.getBoundingClientRect();
+      tx = (e.clientX - (r.left + r.width / 2)) * 0.34;
+      ty = (e.clientY - (r.top + r.height / 2)) * 0.34; t = 1;
+    });
+    cell.addEventListener('pointerleave', () => { tx = 0; ty = 0; t = 0; });
+    tickers.add(dt => {
+      cx = damp(cx, tx, 9, dt); cy = damp(cy, ty, 9, dt);
+      btn.style.transform = `translate3d(${cx}px,${cy}px,0)`;
+      btn.style.boxShadow = `0 ${10 + Math.abs(cy)}px ${26 + Math.abs(cx)}px rgba(255,47,208,${t ? .42 : .12})`;
+    });
+  }
+  // 3D tilt
+  const tc = $('#tiltCell'), card = $('#tiltCard');
+  if (tc && card) {
+    let tx = 0, ty = 0, cx = 0, cy = 0;
+    tc.addEventListener('pointermove', e => {
+      const r = card.getBoundingClientRect();
+      tx = (e.clientX - (r.left + r.width / 2)) / (r.width / 2);
+      ty = (e.clientY - (r.top + r.height / 2)) / (r.height / 2);
+    });
+    tc.addEventListener('pointerleave', () => { tx = 0; ty = 0; });
+    tickers.add(dt => {
+      cx = damp(cx, clamp(tx, -1, 1), 8, dt); cy = damp(cy, clamp(ty, -1, 1), 8, dt);
+      card.style.transform = `perspective(800px) rotateY(${cx * 12}deg) rotateX(${-cy * 10}deg)`;
+      card.style.background = `linear-gradient(${160 + cx * 40}deg, rgba(255,47,208,${.10 + Math.abs(cx) * .18}), rgba(123,61,255,${.08 + Math.abs(cy) * .18})), #0b0916`;
+    });
+  }
+  // spotlight
+  const spot = $('#spot');
+  if (spot) spot.addEventListener('pointermove', e => {
+    const r = spot.getBoundingClientRect();
+    spot.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+    spot.style.setProperty('--my', (e.clientY - r.top) + 'px');
+  });
+})();
+
+/* ───────── 12 counter ───────── */
+(() => {
+  const boxes = $$('[data-reveal-count]'); if (!boxes.length) return;
+  const nf = new Intl.NumberFormat('en-US');
+  const runOne = el => {
+    const to = +el.dataset.to, dec = +(el.dataset.dec || 0), dur = 1600;
+    const paint = v => el.textContent = dec ? v.toFixed(dec) : nf.format(Math.round(v));
+    if (REDUCE) { paint(to); return; }
+    const t0 = performance.now();
+    (function f(now) {
+      const p = clamp((now - t0) / dur);
+      paint(EASE.power4out(p) * to);      // 关键：插值也不是线性的
+      if (p < 1) requestAnimationFrame(f);
+    })(performance.now());
+  };
+  const io2 = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) $$('b', e.target).forEach(runOne);
+  }), { threshold: 0.3 });
+  boxes.forEach(b => io2.observe(b));
+  const btn = $('[data-replay-count]');
+  if (btn) btn.addEventListener('click', () => $$('b', boxes[0]).forEach(runOne));
+})();
+
+/* ───────── 13 easing comparison ───────── */
+(() => {
+  const list = $('#easeList'); if (!list) return;
+  const rows = [
+    ['linear', '#6f689b'], ['power1out', '#9a92bf'], ['power2out', '#4be1ff'],
+    ['power4out', '#ff2fd0'], ['backOut', '#b6ff3d'], ['sineInOut', '#7b3dff'],
+  ];
+  list.innerHTML = rows.map(([name, c]) => `
+    <div class="ease-row">
+      <span class="en">${name.replace(/([A-Z])/g, '.$1').toLowerCase()}</span>
+      <span class="et"><i style="background:${c};box-shadow:0 0 12px ${c}"></i></span>
+      <svg class="ep" viewBox="0 0 116 52" preserveAspectRatio="none"></svg>
+    </div>`).join('');
+
+  // 画曲线
+  $$('.ease-row').forEach((row, i) => {
+    const [name, c] = rows[i];
+    const fn = EASE[name];
+    const W = 116, H = 52, pts = [];
+    for (let s = 0; s <= 40; s++) {
+      const t = s / 40;
+      pts.push(`${(t * (W - 10) + 5).toFixed(2)},${(H - 6 - fn(t) * (H - 12)).toFixed(2)}`);
+    }
+    const svg = $('svg', row);
+    svg.innerHTML = `<polyline points="${pts.join(' ')}" fill="none" stroke="${c}" stroke-width="2" opacity=".85"/>`;
+  });
+
+  const plays = () => $$('.et i').forEach((dot, i) => {
+    const fn = EASE[rows[i][0]], c = rows[i][1];
+    dot.style.background = c; dot.style.boxShadow = `0 0 12px ${c}`;
+    if (REDUCE) { dot.style.transform = 'translate3d(0,0,0)'; return; }
+    const dist = dot.parentElement.clientWidth - 12, t0 = performance.now(), dur = 1300;
+    (function f(now) {
+      const p = clamp((now - t0) / dur);
+      dot.style.transform = `translate3d(${fn(p) * dist}px,0,0)`;
+      if (p < 1) requestAnimationFrame(f);
+    })(performance.now());
+  });
+
+  plays();
+  $('#easeBtn').addEventListener('click', plays);
+  new IntersectionObserver(es => es.forEach(e => e.isIntersecting && plays()), { threshold: .4 }).observe(list);
+})();
+
+/* ───────── 14 FLIP ───────── */
+(() => {
+  const grid = $('#flipGrid'); if (!grid) return;
+  let open = null;
+  grid.addEventListener('click', e => {
+    const card = e.target.closest('.flip-card'); if (!card) return;
+    const first = card.getBoundingClientRect();            // First
+    if (open && open !== card) open.classList.remove('open');
+    card.classList.toggle('open');
+    open = card.classList.contains('open') ? card : null;
+    const last = card.getBoundingClientRect();             // Last
+    if (REDUCE) return;
+    const dx = first.left - last.left, dy = first.top - last.top;
+    const sx = first.width / last.width, sy = first.height / last.height;
+    card.animate([                                          // Invert → Play
+      { transform: `translate3d(${dx}px,${dy}px,0) scale(${sx},${sy})`, transformOrigin: 'top left' },
+      { transform: 'none', transformOrigin: 'top left' },
+    ], { duration: 420, easing: 'cubic-bezier(.22,1,.36,1)' });
+  });
+})();
+
+/* ───────── Hero canvas：网格 + 十字准星（参考站 shader 的 2D 等价物） ───────── */
+(() => {
+  const cv = $('#grid'); if (!cv) return;
+  const ctx = cv.getContext('2d');
+  const hero = cv.parentElement;
+  let W = 0, H = 0;
+  const dpr = Math.min(2, devicePixelRatio || 1);
+
+  const U = { lines: 27, lineAlpha: .5, crossSize: 1.5, crossAlpha: .5, velocity: 0, progress: 0 };
+  let mx = 0, my = 0, tmx = 0, tmy = 0, lastY = scrollY, visible = true;
+
+  const resize = () => {
+    W = hero.clientWidth; H = hero.clientHeight;
+    cv.width = W * dpr; cv.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  };
+  resize();
+  new ResizeObserver(resize).observe(hero);
+  new IntersectionObserver(es => visible = es[0].isIntersecting, { threshold: 0 }).observe(hero);
+  addEventListener('pointermove', e => {
+    tmx = (e.clientX / innerWidth - .5) * 2;
+    tmy = (e.clientY / innerHeight - .5) * 2;
+  }, { passive: true });
+
+  tickers.add(dt => {
+    if (!visible) return;
+    // uVelocity：滚动速度 → 阻尼（等价于 MathUtils.lerp(cur, 5*raw, 6*dt)）
+    const raw = Math.abs(scrollY - lastY) / Math.max(dt, .001) / 2200;
+    lastY = scrollY;
+    U.velocity = damp(U.velocity, clamp(raw), 6, dt);
+    U.progress = damp(U.progress, clamp(scrollY / innerHeight), 4, dt);
+    mx = damp(mx, tmx, 4, dt); my = damp(my, tmy, 4, dt);
+
+    ctx.clearRect(0, 0, W, H);
+    const v = U.velocity;
+
+    // 水平线 × 27
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = `rgba(150,130,255,${Math.min(.42, .06 + v * .5)})`;
+    for (let i = 1; i < U.lines; i++) {
+      const y = (H * i / U.lines) + my * 6;
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    }
+    // 竖线（更淡）
+    ctx.strokeStyle = `rgba(150,130,255,${Math.min(.14, .03 + v * .18)})`;
+    for (let x = 0; x < W; x += 64) {
+      ctx.beginPath(); ctx.moveTo(x + mx * 10, 0); ctx.lineTo(x + mx * 10, H); ctx.stroke();
+    }
+    // 十字准星
+    const cx = W / 2 + mx * 90, cy = H * 0.46 + my * 60;
+    const s = U.crossSize * (16 + v * 60);
+    ctx.strokeStyle = `rgba(255,255,255,${Math.min(.6, .12 + v * .5)})`;
+    ctx.beginPath();
+    ctx.moveTo(cx - s * .6, cy); ctx.lineTo(cx + s * .6, cy);
+    ctx.moveTo(cx, cy - s * .6); ctx.lineTo(cx, cy + s * .6);
+    ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx, cy, s, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(255,47,208,${Math.min(.5, .1 + v * .45)})`; ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx, cy, s * .18, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(255,255,255,${Math.min(.5, .2 + v * .3)})`; ctx.stroke();
+  });
+})();
+</script>
+</body>
+</html>
